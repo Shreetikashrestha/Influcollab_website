@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="520" height="140" viewBox="0 0 520 140" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Collab logo">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#8b5cf6" offset="0" />
+      <stop stop-color="#ec4899" offset="1" />
+    </linearGradient>
+    <linearGradient id="t" x1="0" x2="1">
+      <stop stop-color="#7c3aed" offset="0" />
+      <stop stop-color="#f43f5e" offset="1" />
+    </linearGradient>
+  </defs>
+
+  <!-- rounded square -->
+  <rect x="4" y="4" width="96" height="96" rx="20" fill="url(#g)" />
+
+  <!-- heart -->
+  <path d="M52 30c-6.5-8-18-7-25 0-7 7-7 18 0 25L52 86l25-31c7-7 7-18 0-25-7-7-18-8-25 0z" fill="white" transform="translate(-4,-4)" />
+
+  <!-- Text -->
+  <g transform="translate(120,92)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700" fill="url(#t)">Collab</text>
+  </g>
+</svg>
