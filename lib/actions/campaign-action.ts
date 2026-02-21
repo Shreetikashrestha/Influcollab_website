@@ -41,9 +41,9 @@ export const handleCreateCampaign = async (formData: any) => {
     }
 }
 
-export const handleJoinCampaign = async (id: string) => {
+export const handleJoinCampaign = async (id: string, message?: string) => {
     try {
-        const result = (await joinCampaign(id)) as any;
+        const result = (await joinCampaign(id, message)) as any;
         if (result.success) {
             revalidatePath(`/campaigns/${id}`);
             revalidatePath("/(dashboard)/influencer");

@@ -34,9 +34,9 @@ export const createCampaign = async (campaignData: any) => {
     }
 }
 
-export const joinCampaign = async (id: string) => {
+export const joinCampaign = async (id: string, message?: string) => {
     try {
-        const response = await axiosInstance.post(API.CAMPAIGN.JOIN(id));
+        const response = await axiosInstance.post(API.CAMPAIGN.JOIN(id), { message });
         return response.data;
     } catch (error: any) {
         throw new Error(
@@ -48,10 +48,38 @@ export const joinCampaign = async (id: string) => {
 export const fetchBrandCampaigns = async () => {
     try {
         const response = await axiosInstance.get(API.CAMPAIGN.BRAND_CAMPAIGNS);
-        return response.data;
+        // Backend returns { success, data: [] }, we normalize it to { success, campaigns: [] }
+        const raw: any = response.data;
+        return {
+            success: raw.success,
+            campaigns: raw.data || raw.campaigns || [],
+        };
     } catch (error: any) {
         throw new Error(
             error.response?.data?.message || "Failed to fetch brand campaigns"
+        );
+    }
+}
+
+export const fetchBrandStats = async (): Promise<any> => {
+    try {
+        const response = await axiosInstance.get(API.CAMPAIGN.BRAND_STATS);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(
+            error.response?.data?.message || "Failed to fetch brand stats"
+        );
+    }
+}
+
+
+export const updateCampaign = async (id: string, campaignData: any) => {
+    try {
+        const response = await axiosInstance.patch(API.CAMPAIGN.UPDATE(id), campaignData);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(
+            error.response?.data?.message || "Failed to update campaign"
         );
     }
 }

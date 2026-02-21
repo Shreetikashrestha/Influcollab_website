@@ -25,11 +25,42 @@ export const getAllUsers = async (query?: {
         );
         return response.data;
     } catch (err: Error | any) {
-        throw new Error(
-            err.response?.data?.message
-            || err.message
-            || "Failed to fetch users"
-        );
+        console.error('getAllUsers API error:', err);
+        
+        // Return a structured error response
+        if (err.code === 'ERR_NETWORK' || err.message?.includes('Cannot reach server')) {
+            return {
+                success: false,
+                message: 'Cannot connect to server. Please ensure the backend is running.',
+                users: [],
+                total: 0
+            };
+        }
+        
+        if (err.response?.status === 401) {
+            return {
+                success: false,
+                message: 'Unauthorized. Please login as admin.',
+                users: [],
+                total: 0
+            };
+        }
+        
+        if (err.response?.status === 403) {
+            return {
+                success: false,
+                message: 'Access denied. Admin privileges required.',
+                users: [],
+                total: 0
+            };
+        }
+        
+        return {
+            success: false,
+            message: err.response?.data?.message || err.message || "Failed to fetch users",
+            users: [],
+            total: 0
+        };
     }
 };
 

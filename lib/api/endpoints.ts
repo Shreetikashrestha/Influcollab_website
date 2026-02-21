@@ -5,37 +5,62 @@ export const API = {
         REGISTER: "api/auth/register",
         LOGIN: "api/auth/login",
         WHOAMI: "api/auth/whoami",
-        UPDATE_PROFILE: "api/user/update",
-        LOGOUT: "api/auth/logout"
+        UPDATE_PROFILE: "api/users/update",
+        LOGOUT: "api/auth/logout",
+        SEARCH_MESSAGING: "api/users/search-messaging"
     },
     CAMPAIGN: {
         LIST: "api/campaigns",
         DETAILS: (id: string) => `api/campaigns/${id}`,
-        CREATE: "api/campaigns/create",
+        CREATE: "api/campaigns",
+        UPDATE: (id: string) => `api/campaigns/${id}`,
         JOIN: (id: string) => `api/campaigns/${id}/join`,
         SEARCH: "api/campaigns/search",
-        BRAND_CAMPAIGNS: "api/brand/campaigns"
+        BRAND_CAMPAIGNS: "api/campaigns/my",
+        BRAND_STATS: "api/campaigns/brand-stats"
+    },
+    APPLICATION: {
+        CREATE: "api/applications",
+        MY_APPLICATIONS: "api/applications/my",
+        CAMPAIGN_APPLICATIONS: (campaignId: string) => `api/applications/campaign/${campaignId}`,
+        UPDATE_STATUS: (id: string) => `api/applications/${id}/status`,
+        GET_STATS: "api/applications/stats/influencer"
     },
     MESSAGE: {
-        LIST: "api/messages",
-        CHAT: (userId: string) => `api/messages/${userId}`
+        LIST: 'api/messages/conversations',
+        CHAT: (id: string) => `api/messages/conversation/${id}`,
+        SEND: 'api/messages/send',
+        READ: (id: string) => `api/messages/${id}/read`,
     },
-    BRAND: {
-        PROFILE: "api/brand/profile"
+    NOTIFICATION: {
+        LIST: 'api/notifications',
+        UNREAD: 'api/notifications/unread-count',
+        READ: (id: string) => `api/notifications/${id}/read`,
+        MARK_ALL_READ: 'api/notifications/mark-all-read',
+        DELETE: (id: string) => `api/notifications/${id}`,
     },
-    COLLABORATION: {
-        REQUESTS: "api/collaborations/requests",
-        STATUS: "api/collaborations/status"
+    PROFILES: {
+        ME: 'api/profiles/me',
+        GET: (id: string) => `api/profiles/${id}`,
+        UPDATE: 'api/profiles/update',
+        INFLUENCERS: 'api/profiles/influencers',
     },
     ADMIN: {
-        USERS: "api/admin/users",
-        USER_BY_ID: (id: string) => `api/admin/users/${id}`,
-        CREATE_USER: "api/admin/users",
-        UPDATE_USER: (id: string) => `api/admin/users/${id}`,
-        DELETE_USER: (id: string) => `api/admin/users/${id}`
+        USERS: "api/users/admin/all",
+        USER_BY_ID: (id: string) => `api/users/${id}`,
+        CREATE_USER: "api/users/admin",
+        UPDATE_USER: (id: string) => `api/users/admin/${id}`,
+        DELETE_USER: (id: string) => `api/users/admin/${id}`,
+        CAMPAIGNS: "api/campaigns", // Use regular campaigns endpoint for now
+        APPLICATIONS: "api/applications"
     },
-    USER: {
-        PROFILE: "api/user/profile",
-        UPDATE_PROFILE: (id: string) => `api/auth/${id}`
+    REVIEW: {
+        CREATE: "api/reviews",
+        GET_BY_USER: (userId: string) => `api/reviews/${userId}`
+    },
+    PAYMENT: {
+        MY_TRANSACTIONS: "api/payments/my-transactions",
+        BALANCE: "api/payments/balance",
+        PAYOUT: "api/payments/payout"
     }
 }
