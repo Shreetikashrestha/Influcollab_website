@@ -116,6 +116,7 @@ export default async function InfluencerDashboard() {
                                 applicants={campaign.applicants?.length || 0}
                                 description={campaign.description}
                                 image={campaign.image}
+                                href={`/influencer/campaign/${campaign._id}`}
                             />
                         ))}
                     </div>
