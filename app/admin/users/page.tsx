@@ -25,21 +25,40 @@ export default function UserApprovalPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [total, setTotal] = useState(0);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchUsers = async () => {
         try {
             setLoading(true);
+            setError(null);
+            
             const response = await getAllUsers({
                 page,
                 limit,
                 search: searchTerm
-            }) as any;
-            if (response.success) {
-                setUsers(response.users);
-                setTotal(response.total);
+            });
+            
+            console.log('Users API Response:', response); // Debug log
+            
+            if (response && response.success) {
+                setUsers(response.users || []);
+                setTotal(response.total || 0);
+                setError(null);
+            } else {
+                // Handle unsuccessful response
+                const errorMsg = response?.message || "Failed to fetch users";
+                setError(errorMsg);
+                setUsers([]);
+                setTotal(0);
+                toast.error(errorMsg);
             }
         } catch (err: any) {
-            toast.error(err.message || "Failed to fetch users");
+            console.error('Fetch users error:', err);
+            const errorMsg = err.message || "Failed to fetch users";
+            setError(errorMsg);
+            toast.error(errorMsg);
+            setUsers([]);
+            setTotal(0);
         } finally {
             setLoading(false);
         }
@@ -47,7 +66,17 @@ export default function UserApprovalPage() {
 
     useEffect(() => {
         fetchUsers();
-    }, [page, limit, searchTerm]);
+    }, [page, limit]);
+
+    // Separate effect for search with debounce
+    useEffect(() => {
+        const delaySearch = setTimeout(() => {
+            setPage(1); // Reset to first page on search
+            fetchUsers();
+        }, 500);
+        
+        return () => clearTimeout(delaySearch);
+    }, [searchTerm]);
 
     const handleAction = async (id: string, action: 'approve' | 'reject' | 'delete') => {
         const user = users.find(u => u._id === id);
@@ -95,6 +124,27 @@ export default function UserApprovalPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Error Display */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                    <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <X className="text-white" size={14} />
+                        </div>
+                        <div>
+                            <h3 className="text-red-800 font-bold text-sm mb-1">Failed to Load Users</h3>
+                            <p className="text-red-700 text-xs">{error}</p>
+                            <button
+                                onClick={fetchUsers}
+                                className="mt-3 text-xs font-bold text-red-600 hover:text-red-700 underline"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Table Container */}
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">

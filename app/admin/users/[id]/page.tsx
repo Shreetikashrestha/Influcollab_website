@@ -13,7 +13,7 @@ import {
     Loader2
 } from 'lucide-react';
 import Link from 'next/link';
-import { getUserById, updateUser } from '@/lib/api/admin';
+import { getUserById, updateUser, deleteUser } from '@/lib/api/admin';
 import { toast } from 'react-toastify';
 
 interface User {
@@ -43,7 +43,7 @@ export default function UserDetailsPage() {
         const fetchUser = async () => {
             try {
                 // Assert the response type for getUserById
-                const res: ApiResponse<User> = await getUserById(id as string);
+                const res: ApiResponse<User> = await getUserById(id as string) as any;
                 if (res.success && res.data) {
                     setUser(res.data);
                 } else {
@@ -63,7 +63,7 @@ export default function UserDetailsPage() {
         if (!confirm(`Are you sure you want to delete ${user.fullName}?`)) return;
         try {
             // Assert the response type for deleteUser
-            const res: ApiResponse<null> = await deleteUser(id as string);
+            const res: ApiResponse<null> = await deleteUser(id as string) as any;
             if (res.success) {
                 toast.success("User deleted successfully");
                 router.push('/admin/users');

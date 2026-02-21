@@ -29,7 +29,7 @@ export default function EditUserPage() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await getUserById(id as string);
+                const res: any = await getUserById(id as string);
                 if (res.success) {
                     setFormData({
                         fullName: res.data.fullName,
@@ -58,7 +58,7 @@ export default function EditUserPage() {
             data.append('role', formData.role);
             data.append('isInfluencer', formData.isInfluencer.toString());
 
-            const res = await updateUser(id as string, data);
+            const res: any = await updateUser(id as string, data);
             if (res.success) {
                 toast.success("User updated successfully");
                 router.push(`/admin/users/${id}`);

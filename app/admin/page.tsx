@@ -9,31 +9,92 @@ import {
     TrendingDown,
     Activity,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    CircleDollarSign
 } from 'lucide-react';
 import { getAllUsers } from '@/lib/api/admin';
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    LineChart,
+    Line,
+    AreaChart,
+    Area
+} from 'recharts';
+
+// Mock data for charts
+const growthData = [
+    { name: 'Jan', influencers: 45, brands: 12 },
+    { name: 'Feb', influencers: 52, brands: 15 },
+    { name: 'Mar', influencers: 48, brands: 10 },
+    { name: 'Apr', influencers: 61, brands: 18 },
+    { name: 'May', influencers: 55, brands: 22 },
+    { name: 'Jun', influencers: 67, brands: 25 },
+    { name: 'Jul', influencers: 72, brands: 28 },
+    { name: 'Aug', influencers: 85, brands: 30 },
+    { name: 'Sep', influencers: 92, brands: 35 },
+    { name: 'Oct', influencers: 105, brands: 42 },
+    { name: 'Nov', influencers: 118, brands: 45 },
+    { name: 'Dec', influencers: 132, brands: 50 },
+];
+
+const revenueData = [
+    { name: 'Jan', revenue: 4500, fees: 675 },
+    { name: 'Feb', revenue: 5200, fees: 780 },
+    { name: 'Mar', revenue: 4800, fees: 720 },
+    { name: 'Apr', revenue: 6100, fees: 915 },
+    { name: 'May', revenue: 5500, fees: 825 },
+    { name: 'Jun', revenue: 6700, fees: 1005 },
+    { name: 'Jul', revenue: 7200, fees: 1080 },
+    { name: 'Aug', revenue: 8500, fees: 1275 },
+    { name: 'Sep', revenue: 9200, fees: 1380 },
+    { name: 'Oct', revenue: 12000, fees: 1800 },
+    { name: 'Nov', revenue: 14500, fees: 2175 },
+    { name: 'Dec', revenue: 18200, fees: 2730 },
+];
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         total: 0,
         influencers: 0,
         brands: 0,
-        admins: 0
+        admins: 0,
+        totalRevenue: 0,
+        totalVolume: 0
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchData = async () => {
             try {
-                const res = await getAllUsers({ limit: 1000 }) as any;
-                if (res.success) {
-                    const users = res.users;
-                    setStats({
-                        total: res.total,
+                const [userRes, paymentRes] = await Promise.all([
+                    getAllUsers({ limit: 1000 }),
+                    import('@/lib/api/payment').then(m => m.fetchTransactionStats())
+                ]) as any;
+
+                if (userRes.success) {
+                    const users = userRes.users;
+                    setStats((prev: any) => ({
+                        ...prev,
+                        total: userRes.total,
                         influencers: users.filter((u: any) => u.isInfluencer).length,
                         brands: users.filter((u: any) => !u.isInfluencer && u.role !== 'admin').length,
                         admins: users.filter((u: any) => u.role === 'admin').length
-                    });
+                    }));
+                }
+
+                if (paymentRes.success) {
+                    setStats((prev: any) => ({
+                        ...prev,
+                        totalRevenue: paymentRes.stats.totalRevenue,
+                        totalVolume: paymentRes.stats.totalVolume
+                    }));
                 }
             } catch (err) {
                 console.error(err);
@@ -41,7 +102,7 @@ export default function AdminDashboard() {
                 setLoading(false);
             }
         };
-        fetchStats();
+        fetchData();
     }, []);
 
     const cards = [
@@ -54,17 +115,17 @@ export default function AdminDashboard() {
             isPositive: true
         },
         {
-            title: 'Active Influencers',
-            value: stats.influencers,
-            icon: Activity,
-            color: 'purple',
-            trend: '+5.2%',
+            title: 'Platform Revenue',
+            value: `NPR ${stats.totalRevenue.toLocaleString()}`,
+            icon: CircleDollarSign,
+            color: 'emerald',
+            trend: '+24.2%',
             isPositive: true
         },
         {
-            title: 'Partner Brands',
-            value: stats.brands,
-            icon: UserCheck,
+            title: 'Total Volume',
+            value: `NPR ${stats.totalVolume.toLocaleString()}`,
+            icon: TrendingUp,
             color: 'orange',
             trend: '+8.1%',
             isPositive: true
@@ -108,38 +169,104 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
-            {/* Extra Feature: Engagement Overview */}
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* User Growth Chart */}
+                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 tracking-tight">User Acquisition</h3>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">12-Month Bar Chart</p>
+                        </div>
+                        <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                            Growth: +24%
+                        </div>
+                    </div>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={growthData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                                    cursor={{ fill: '#f9fafb' }}
+                                />
+                                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                                <Bar dataKey="influencers" name="Influencers" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="brands" name="Brands" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Revenue Trend Chart */}
+                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Revenue Trends</h3>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Platform Fees & Volume</p>
+                        </div>
+                        <div className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                            NPR {stats.totalRevenue.toLocaleString()} Total
+                        </div>
+                    </div>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueData}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                                />
+                                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                                <Area type="monotone" dataKey="revenue" name="Total Volume" stroke="#10b981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={3} />
+                                <Line type="monotone" dataKey="fees" name="Platform Fees" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: 'white' }} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* Platform Health Section */}
             <div className="bg-gray-900 rounded-[48px] p-12 text-white overflow-hidden relative">
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
                     <div className="max-w-xl">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md mb-8">
-                            <TrendingUp size={14} className="text-emerald-400" /> System Growth
+                            <Activity size={14} className="text-emerald-400" /> System Health
                         </div>
-                        <h2 className="text-4xl font-black tracking-tight mb-6">User acquisition is up 24% this month</h2>
-                        <p className="text-gray-400 font-medium leading-relaxed text-lg">Your marketing campaigns are driving significant traffic to the influencer onboarding flow. Consider increasing server capacity for the upcoming weekend rush.</p>
+                        <h2 className="text-4xl font-black tracking-tight mb-6">Your infrastructure is operating at peak efficiency</h2>
+                        <p className="text-gray-400 font-medium leading-relaxed text-lg">Platform uptime is at 99.98% for the last 30 days. API response times are averaging 142ms, well within the target threshold.</p>
                     </div>
-                    <div className="w-full md:w-[400px] h-[250px] bg-white/5 rounded-[40px] border border-white/10 backdrop-blur-xl p-10 flex flex-col justify-between">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-500">Peak Activity</p>
-                            <Shield className="text-blue-500" size={20} />
+                    <div className="grid grid-cols-2 gap-6 w-full md:w-auto">
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Uptime</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">99.9%</h4>
                         </div>
-                        <div className="space-y-4">
-                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full w-[80%] bg-blue-500 rounded-full"></div>
-                            </div>
-                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full w-[45%] bg-purple-500 rounded-full"></div>
-                            </div>
-                            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full w-[65%] bg-emerald-500 rounded-full"></div>
-                            </div>
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Response Time</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">142ms</h4>
                         </div>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">Resource Allocation: Optimized</p>
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Error Rate</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">0.04%</h4>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Transactions</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">1.2k/hr</h4>
+                        </div>
                     </div>
                 </div>
                 {/* Decorative Elements */}
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-600/20 blur-[120px] rounded-full"></div>
-                <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-purple-600/10 blur-[120px] rounded-full"></div>
+                <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-emerald-600/10 blur-[120px] rounded-full"></div>
             </div>
         </div>
     );
