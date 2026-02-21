@@ -14,6 +14,8 @@ interface CampaignCardProps {
     applicants: number;
     description?: string;
     image?: string;
+    onViewDetails?: () => void;
+    href?: string;
 }
 
 export default function CampaignCard({
@@ -26,7 +28,9 @@ export default function CampaignCard({
     location,
     applicants,
     description,
-    image
+    image,
+    onViewDetails,
+    href
 }: CampaignCardProps) {
     return (
         <div className="bg-white rounded-4xl p-6 border border-slate-50 shadow-sm hover:shadow-xl transition-all duration-500 group">
@@ -84,12 +88,22 @@ export default function CampaignCard({
                 </div>
             </div>
 
-            <Link
-                href={`/campaigns/${id}`}
-                className="block w-full text-center bg-auth-gradient text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-                View Details
-            </Link>
+            {href ? (
+                <Link
+                    href={href}
+                    className="block w-full text-center bg-auth-gradient text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-100 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                    View Details
+                </Link>
+            ) : (
+                <button
+                    type="button"
+                    onClick={onViewDetails}
+                    className="block w-full text-center bg-auth-gradient text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                    View Details
+                </button>
+            )}
         </div>
     );
 }

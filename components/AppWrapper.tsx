@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import SplashScreen from './SplashScreen';
@@ -11,8 +12,9 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
 
-    // Pages that should NOT have Sidebar (auth pages)
+    // Pages that should NOT have Sidebar (auth pages and admin pages)
     const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
+    const isAdminPage = pathname?.startsWith('/admin');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -26,12 +28,9 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
         <>
             <SplashScreen />
             <div className={`transition-opacity duration-1000 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
-                {!isAuthPage ? (
+                {!isAuthPage && !isAdminPage ? (
                     <div className="min-h-screen bg-[#fcfcfd]">
                         <Sidebar />
-                        {/* Only show Navbar if not logged in or on public pages? 
-                            Actually, the new design uses Sidebar + Integrated Header.
-                        */}
                         {!isAuthenticated && <Navbar />}
                         <main className={`${isAuthenticated ? 'sm:ml-72' : ''} pt-0 min-h-screen`}>
                             {children}

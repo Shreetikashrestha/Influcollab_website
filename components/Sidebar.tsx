@@ -15,7 +15,9 @@ import {
     Home,
     Plus,
     BarChart3,
-    Users
+    Users,
+    CreditCard,
+    Wallet
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -23,18 +25,21 @@ export default function Sidebar() {
     const { user, logout } = useAuth();
     const isBrand = user?.isInfluencer === false;
 
+
     const influencerLinks = [
         { name: "Home", href: "/influencer", icon: Home },
         { name: "Discover", href: "/campaigns", icon: Search },
         { name: "Messages", href: "/messages", icon: MessageSquare, badge: 5 },
+        { name: "Billing", href: "/user/billing", icon: Wallet },
         { name: "Profile", href: "/user/profile", icon: UserCircle },
     ];
 
     const brandLinks = [
         { name: "Dashboard", href: "/brand", icon: LayoutDashboard },
-        { name: "Find Influencers", href: "/campaigns", icon: Search },
+        { name: "Find Influencers", href: "/influencers", icon: Search },
         { name: "Messages", href: "/messages", icon: MessageSquare, badge: 8 },
         { name: "Brand Profile", href: "/user/profile", icon: UserCircle },
+        { name: "Billing", href: "/brand/billing", icon: CreditCard },
         { name: "Analytics", href: "/analytics", icon: BarChart3 },
     ];
 
