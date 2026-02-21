@@ -14,13 +14,20 @@ export default function CreateCampaignPage() {
         setLoading(true);
 
         const formData = new FormData(event.currentTarget);
+
+        const rawRequirements = formData.get("requirements")?.toString() || "";
+        const requirementsArray = rawRequirements.split("\n").map(r => r.trim()).filter(r => r !== "");
+
         const data = {
             title: formData.get("title"),
-            description: formData.get("description"),
+            brandName: formData.get("brandName"),
             category: formData.get("category"),
+            budgetMin: Number(formData.get("budgetMin")),
+            budgetMax: Number(formData.get("budgetMax")),
             deadline: formData.get("deadline"),
             location: formData.get("location"),
-            requirements: formData.get("requirements"),
+            description: formData.get("description"),
+            requirements: requirementsArray,
         };
 
         const response = await handleCreateCampaign(data);
@@ -40,15 +47,54 @@ export default function CreateCampaignPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Create New Campaign</h1>
 
             <form onSubmit={onSubmit} className="space-y-6 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Title</label>
-                    <input
-                        name="title"
-                        type="text"
-                        required
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        placeholder="e.g. Summer Fashion Collaboration"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Title</label>
+                        <input
+                            name="title"
+                            type="text"
+                            required
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            placeholder="e.g. Summer Fashion Collaboration"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                        <input
+                            name="brandName"
+                            type="text"
+                            required
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            placeholder="e.g. Acme Corp"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Budget ($)</label>
+                        <input
+                            name="budgetMin"
+                            type="number"
+                            min="1"
+                            step="0.01"
+                            required
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            placeholder="e.g. 50"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Budget ($)</label>
+                        <input
+                            name="budgetMax"
+                            type="number"
+                            min="1"
+                            step="0.01"
+                            required
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            placeholder="e.g. 500"
+                        />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
