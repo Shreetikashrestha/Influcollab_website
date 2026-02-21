@@ -16,7 +16,7 @@ import AuthInput from "@/components/AuthInput";
 export const loginSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address" }),
     password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-    role: z.enum(["Influencer", "Brand"]),
+    role: z.enum(["Influencer", "Brand", "Admin"]).optional(), // Optional - just for UI
     rememberMe: z.boolean().optional(),
 });
 
@@ -47,7 +47,9 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginForm) => {
         setError("");
         try {
-            const res = await handleLogin(data);
+            // Don't send the role to backend - it comes from the database
+            const { role, ...loginData } = data;
+            const res = await handleLogin(loginData);
             if (!res.success) {
                 throw new Error(res.message || "Login failed");
             }
