@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { clearAuthCookies, getAuthToken, getUserData } from "@/lib/cookie";
+import { clearAuthCookies, getAuthToken, getUserData, setUserData } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
+import { fetchWhoAmI } from "@/lib/api/auth";
 
 interface AuthContextProps {
     isAuthenticated: boolean;
@@ -11,6 +12,7 @@ interface AuthContextProps {
     logout: () => Promise<void>;
     loading: boolean;
     checkAuth: () => Promise<void>;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -21,7 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    
+
     const checkAuth = async () => {
         try {
             const token = await getAuthToken();
@@ -33,6 +35,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const refreshUser = async () => {
+        try {
+            const res: any = await fetchWhoAmI();
+            if (res.success) {
+                const userData = res.data;
+                setUser(userData);
+                await setUserData(userData);
+            }
+        } catch (error) {
+            console.error("Refresh user failed:", error);
         }
     };
 
@@ -52,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, logout, loading, checkAuth }}>
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, logout, loading, checkAuth, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
