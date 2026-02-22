@@ -7,9 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest --watch",
-    "test:ci": "jest --ci",
-    "test:coverage": "jest --coverage"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "npm run test:ci && npm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -27,11 +32,12 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.1.5",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/user-event": "^14.5.1",
-    "@types/jest": "^29.5.11",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.23",
     "@types/node": "^20.19.30",
     "@types/react": "^19",

@@ -1,39 +1,34 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
-
-// Polyfill for TextEncoder/TextDecoder (required for Next.js)
 import { TextEncoder, TextDecoder } from 'util'
+
+// Polyfill for TextEncoder/TextDecoder
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 
-// Mock Next.js cache
-jest.mock('next/cache', () => ({
-  unstable_cache: jest.fn((fn) => fn),
-  revalidatePath: jest.fn(),
-  revalidateTag: jest.fn(),
-}))
-
 // Mock Next.js router
-jest.mock('next/navigation', () => {
-  const mockPush = jest.fn()
-  const mockReplace = jest.fn()
-  const mockPrefetch = jest.fn()
-  const mockBack = jest.fn()
-  
-  return {
-    useRouter: jest.fn(() => ({
-      push: mockPush,
-      replace: mockReplace,
-      prefetch: mockPrefetch,
-      back: mockBack,
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+      back: jest.fn(),
       pathname: '/',
       query: {},
       asPath: '/',
-    })),
-    usePathname: jest.fn(() => '/'),
-    useSearchParams: jest.fn(() => new URLSearchParams()),
-  }
-})
+    }
+  },
+  usePathname() {
+    return '/'
+  },
+  useSearchParams() {
+    return new URLSearchParams()
+  },
+  useParams() {
+    return {}
+  },
+}))
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -50,13 +45,9 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  takeRecords() {
-    return []
-  }
-  unobserve() {}
+// Suppress console errors in tests
+global.console = {
+  ...console,
+  error: jest.fn(),
+  warn: jest.fn(),
 }
