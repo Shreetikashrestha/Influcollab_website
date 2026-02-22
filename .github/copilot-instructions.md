@@ -1,9 +1,9 @@
 # Copilot Instructions for AI Coding Agents
 
 ## Project Overview
-- **Monorepo**: Contains a Next.js frontend (`next-frontend-web`) and a Node.js/Express backend (`web-api-backend`).
+- **Project Structure**: Contains a Next.js frontend (`next-frontend-web`) and a Node.js/Express backend (`re-webapibackend` - located at project root).
 - **Frontend**: Uses Next.js App Router, TypeScript, Tailwind CSS, and Zod for validation. Auth flows and dashboards are under `app/(auth)/` and `app/auth/`.
-- **Backend**: REST API with Express, TypeScript, Mongoose, and Zod. Config in `web-api-backend/src/config/`.
+- **Backend**: REST API with Express, TypeScript, Mongoose, and Zod. Config in `re-webapibackend/src/config/`.
 
 ## Key Patterns & Conventions
 - **Component Structure**: Auth and dashboard components are in `app/(auth)/_components/`. Use Zod schemas for form validation.
@@ -15,7 +15,7 @@
 
 ## Developer Workflows
 - **Start Frontend**: `npm run dev` in `next-frontend-web` (default port 3000).
-- **Start Backend**: `npm run dev` in `web-api-backend` (default port 5050, see `.env`).
+- **Start Backend**: `npm run dev` in `re-webapibackend` (default port 5050, see `.env`).
 - **Linting**: `eslint.config.mjs` uses Next.js and TypeScript rules. Run `npx eslint .`.
 - **Validation**: Use Zod for all form and API input validation.
 - **Branching**: For feature work, create a branch (e.g., `auth-design` or `sprint-1`). Make small, logical commits (see `SPRINT-1.md`).
