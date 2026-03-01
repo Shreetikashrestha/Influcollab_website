@@ -4,10 +4,15 @@ import { handleCreateCampaign } from "@/lib/actions/campaign-action";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CreateCampaignPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
+
+    // Get today's date in YYYY-MM-DD format for min date
+    const today = new Date().toISOString().split('T')[0];
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -36,7 +41,12 @@ export default function CreateCampaignPage() {
 
         if (response.success) {
             toast.success("Campaign created successfully!");
-            router.push("/campaigns");
+            // Redirect to admin campaigns if user is admin, otherwise to regular campaigns
+            if (user?.role === 'admin') {
+                router.push("/admin/campaigns");
+            } else {
+                router.push("/campaigns");
+            }
         } else {
             toast.error(response.message || "Failed to create campaign");
         }
@@ -76,24 +86,28 @@ export default function CreateCampaignPage() {
                         <input
                             name="budgetMin"
                             type="number"
-                            min="1"
-                            step="0.01"
+                            min="100"
+                            max="1000000"
+                            step="1"
                             required
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            placeholder="e.g. 50"
+                            placeholder="e.g. 500"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Min: $100, Max: $1,000,000</p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Budget ($)</label>
                         <input
                             name="budgetMax"
                             type="number"
-                            min="1"
-                            step="0.01"
+                            min="100"
+                            max="1000000"
+                            step="1"
                             required
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            placeholder="e.g. 500"
+                            placeholder="e.g. 2000"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Min: $100, Max: $1,000,000</p>
                     </div>
                 </div>
 
@@ -117,9 +131,11 @@ export default function CreateCampaignPage() {
                         <input
                             name="deadline"
                             type="date"
+                            min={today}
                             required
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Must be a future date</p>
                     </div>
                 </div>
 

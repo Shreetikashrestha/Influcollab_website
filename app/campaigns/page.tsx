@@ -5,14 +5,11 @@
 import { useEffect, useState } from "react";
 import { handleFetchCampaigns } from "@/lib/actions/campaign-action";
 import CampaignCard from "@/components/CampaignCard";
-import CampaignDetailsModal from "@/components/CampaignDetailsModal";
 
 export default function CampaignsPage() {
 	const [campaigns, setCampaigns] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [modalOpen, setModalOpen] = useState(false);
-	const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
 
 	useEffect(() => {
 		(async () => {
@@ -30,26 +27,6 @@ export default function CampaignsPage() {
 			}
 		})();
 	}, []);
-
-	const handleViewDetails = (campaign: any) => {
-		setSelectedCampaign({
-			title: campaign.title,
-			brand: campaign.brand || campaign.createdBy?.name || "",
-			description: campaign.description,
-			budget: campaign.reward || campaign.budget || "",
-			category: campaign.category,
-			deadline: campaign.deadline ? new Date(campaign.deadline).toLocaleDateString('en-GB') : "",
-			location: campaign.location || "Remote",
-			requirements: campaign.requirements || [],
-			deliverables: campaign.deliverables || [],
-		});
-		setModalOpen(true);
-	};
-
-	const handleCloseModal = () => {
-		setModalOpen(false);
-		setSelectedCampaign(null);
-	};
 
 	return (
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,17 +65,11 @@ export default function CampaignsPage() {
 							applicants={campaign.applicants?.length || 0}
 							description={campaign.description}
 							image={campaign.image}
-							onViewDetails={() => handleViewDetails(campaign)}
+							href={`/campaigns/${campaign._id}`}
 						/>
 					))}
 				</div>
 			)}
-
-			<CampaignDetailsModal
-				open={modalOpen}
-				onClose={handleCloseModal}
-				campaign={selectedCampaign}
-			/>
 		</div>
 	);
 }
