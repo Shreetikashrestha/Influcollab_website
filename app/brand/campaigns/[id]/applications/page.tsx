@@ -30,6 +30,7 @@ export default function CampaignApplicationsPage({ params }: PageProps) {
     const [applications, setApplications] = useState<any[]>([]);
     const [campaign, setCampaign] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState("all");
 
     const loadData = async () => {
         try {
@@ -62,6 +63,18 @@ export default function CampaignApplicationsPage({ params }: PageProps) {
         }
     };
 
+    const filteredApplications = applications.filter(app => {
+        if (statusFilter === "all") return true;
+        return app.status === statusFilter;
+    });
+
+    const stats = {
+        total: applications.length,
+        pending: applications.filter(a => a.status === 'pending').length,
+        accepted: applications.filter(a => a.status === 'accepted').length,
+        rejected: applications.filter(a => a.status === 'rejected').length
+    };
+
     return (
         <div className="p-4 md:p-10 min-h-screen space-y-12">
             <header className="space-y-6">
@@ -79,9 +92,21 @@ export default function CampaignApplicationsPage({ params }: PageProps) {
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight">{campaign?.title || "Applications"}</h1>
                         <p className="text-gray-500 font-medium mt-1">Review influencer credentials and proposal fits.</p>
                     </div>
-                    <div className="flex bg-white p-2 rounded-[24px] border border-gray-100 shadow-sm">
-                        <div className="px-6 py-2 bg-gray-50 text-gray-900 rounded-xl text-[11px] font-black uppercase tracking-widest">
-                            {(applications?.length || 0)} Submissions
+                    <div className="flex items-center gap-4">
+                        <select
+                            value={statusFilter}
+                            onChange={e => setStatusFilter(e.target.value)}
+                            className="bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 cursor-pointer outline-none"
+                        >
+                            <option value="all">All Applications ({stats.total})</option>
+                            <option value="pending">Pending ({stats.pending})</option>
+                            <option value="accepted">Accepted ({stats.accepted})</option>
+                            <option value="rejected">Rejected ({stats.rejected})</option>
+                        </select>
+                        <div className="flex bg-white p-2 rounded-[24px] border border-gray-100 shadow-sm">
+                            <div className="px-6 py-2 bg-gray-50 text-gray-900 rounded-xl text-[11px] font-black uppercase tracking-widest">
+                                {filteredApplications.length} Showing
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -93,17 +118,24 @@ export default function CampaignApplicationsPage({ params }: PageProps) {
                         <div key={i} className="h-32 bg-white rounded-[40px] border border-gray-100 animate-pulse"></div>
                     ))}
                 </div>
-            ) : applications?.length === 0 ? (
+            ) : filteredApplications.length === 0 ? (
                 <div className="bg-white rounded-[48px] border border-gray-100 p-24 text-center max-w-4xl mx-auto shadow-sm">
                     <div className="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-400 mx-auto mb-10">
                         <AlertCircle size={48} />
                     </div>
-                    <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">No Candidates Yet</h2>
-                    <p className="text-gray-400 font-medium max-w-md mx-auto text-lg leading-relaxed">It might take a few days for influencers to discover your campaign and submit proposals. Keep an eye on your notifications!</p>
+                    <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">
+                        {statusFilter === "all" ? "No Candidates Yet" : `No ${statusFilter} Applications`}
+                    </h2>
+                    <p className="text-gray-400 font-medium max-w-md mx-auto text-lg leading-relaxed">
+                        {statusFilter === "all" 
+                            ? "It might take a few days for influencers to discover your campaign and submit proposals. Keep an eye on your notifications!"
+                            : `There are no ${statusFilter} applications for this campaign yet.`
+                        }
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-8">
-                    {applications.map((app) => (
+                    {filteredApplications.map((app) => (
                         <div key={app._id} className="bg-white rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/40 transition-all p-8 md:p-12 group">
                             <div className="flex flex-col lg:flex-row gap-10">
                                 <div className="flex-grow space-y-8">

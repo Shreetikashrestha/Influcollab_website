@@ -194,8 +194,8 @@ export default function BrandDashboard() {
                                 location={campaign.location || "Remote"}
                                 category={campaign.category || "General"}
                                 applicants={campaign.applicantsCount || 0}
-                                views={0}
-                                saves={0}
+                                views={campaign.views || 0}
+                                saves={campaign.saves || 0}
                             />
                         ))}
                     </div>
