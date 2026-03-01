@@ -93,10 +93,10 @@ export default function NotificationsPage() {
                 const response = await axiosInstance.get(`/api/applications/${notification.metadata.applicationId}`);
                 console.log('Application response:', response.data);
                 
-                if (response.data.success) {
-                    setApplicationDetails(response.data.application);
+                if ((response.data as any).success) {
+                    setApplicationDetails((response.data as any).application);
                 } else {
-                    toast.error(response.data.message || 'Failed to load application details');
+                    toast.error((response.data as any).message || 'Failed to load application details');
                 }
             } catch (error: any) {
                 console.error('Application fetch error:', error);
@@ -134,8 +134,7 @@ export default function NotificationsPage() {
 
     const filteredNotifications = notifications.filter(n => {
         if (filter === 'unread') return !n.isRead;
-        if (filter === 'urgent') return n.priority === 'urgent' || n.priority === 'high';
-        return true;
+        return true; // 'all' shows everything
     });
 
     const getIcon = (priority: string) => {
@@ -167,7 +166,7 @@ export default function NotificationsPage() {
                         <Check className="w-4 h-4 mr-2" /> Mark all read
                     </button>
                     <div className="bg-white border border-gray-200 rounded-xl flex overflow-hidden p-1 shadow-sm">
-                        {['all', 'unread', 'urgent'].map((f) => (
+                        {['all', 'unread'].map((f) => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}

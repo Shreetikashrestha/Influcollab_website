@@ -1,28 +1,102 @@
 "use client";
 
-import React, { useState } from 'react';
-import { User, Shield, Bell, Lock, Globe, CreditCard, Users, HelpCircle, ChevronRight, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { User, ChevronRight, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { updateUserProfile } from '@/lib/api/auth';
+import { toast } from 'react-toastify';
 
-export default function SettingsPage() {
-    const { user, logout } = useAuth();
+function SettingsPageContent() {
+    const { user, logout, refreshUser } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [activeSection, setActiveSection] = useState('account');
+    const [loading, setLoading] = useState(false);
+    
+    // Account settings state
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [timezone, setTimezone] = useState('UTC');
+    
+    // Notification preferences state
+    const [notificationPrefs, setNotificationPrefs] = useState({
+        emailNotifications: true,
+        pushNotifications: true,
+        marketplaceUpdates: true,
+        chatMessages: true
+    });
+
+    useEffect(() => {
+        if (user) {
+            setFullName(user.fullName || '');
+            setEmail(user.email || '');
+        }
+    }, [user]);
+
+    // Handle section query parameter
+    useEffect(() => {
+        const section = searchParams.get('section');
+        if (section && ['account'].includes(section)) {
+            setActiveSection(section);
+        }
+    }, [searchParams]);
 
     const sections = [
-        { id: 'account', label: 'Account Settings', icon: User, description: 'Manage your personal information and profile visibility.' },
-        { id: 'security', label: 'Security & Privacy', icon: Shield, description: 'Update your password and manage two-factor authentication.' },
-        { id: 'notifications', label: 'Notification Preferences', icon: Bell, description: 'Choose how and when you want to be notified.' },
-        { id: 'billing', label: 'Billing & Payments', icon: CreditCard, description: 'Manage your payment methods and view billing history.' },
-        { id: 'team', label: 'Team Management', icon: Users, description: 'Invite and manage team members and permissions.' },
-        { id: 'help', label: 'Help & Support', icon: HelpCircle, description: 'Get help with your account or contact our support team.' },
+        { id: 'account', label: 'Account Settings', icon: User, description: 'Manage your personal information.' },
     ];
 
     const onLogout = async () => {
         await logout();
         router.push("/login");
     };
+
+    const handleSaveAccount = async () => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('fullName', fullName);
+            formData.append('email', email);
+            
+            const response: any = await updateUserProfile(formData);
+            if (response.success) {
+                toast.success('Account settings updated successfully!');
+                await refreshUser();
+            } else {
+                toast.error(response.message || 'Failed to update settings');
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update settings');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleNotificationToggle = (key: keyof typeof notificationPrefs) => {
+        setNotificationPrefs(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+        
+        const newPrefs = {
+            ...notificationPrefs,
+            [key]: !notificationPrefs[key]
+        };
+        localStorage.setItem('notificationPreferences', JSON.stringify(newPrefs));
+        toast.success('Notification preference updated');
+    };
+
+    // Load notification preferences from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('notificationPreferences');
+        if (saved) {
+            try {
+                setNotificationPrefs(JSON.parse(saved));
+            } catch (e) {
+                console.error('Failed to parse notification preferences');
+            }
+        }
+    }, []);
 
     return (
         <div className="max-w-6xl mx-auto py-8 px-4">
@@ -80,64 +154,47 @@ export default function SettingsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">Display Name</label>
-                                        <input type="text" defaultValue={user?.fullName} className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium" />
+                                        <input 
+                                            type="text" 
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                            className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium" 
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">Email Address</label>
-                                        <input type="email" defaultValue={user?.email} className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium" />
+                                        <input 
+                                            type="email" 
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium" 
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700">Timezone</label>
-                                    <select className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none">
-                                        <option>UTC (Coordinated Universal Time)</option>
-                                        <option>EST (Eastern Standard Time)</option>
-                                        <option>PST (Pacific Standard Time)</option>
+                                    <select 
+                                        value={timezone}
+                                        onChange={(e) => setTimezone(e.target.value)}
+                                        className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                                    >
+                                        <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                        <option value="EST">EST (Eastern Standard Time)</option>
+                                        <option value="PST">PST (Pacific Standard Time)</option>
+                                        <option value="Asia/Kathmandu">NPT (Nepal Time)</option>
                                     </select>
                                 </div>
 
                                 <div className="pt-8 flex justify-end">
-                                    <button className="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                                        Save Account Changes
+                                    <button 
+                                        onClick={handleSaveAccount}
+                                        disabled={loading}
+                                        className="px-10 py-4 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? 'Saving...' : 'Save Account Changes'}
                                     </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {activeSection === 'notifications' && (
-                            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                                {[
-                                    { label: 'Email Notifications', desc: 'Receive daily digests and important account alerts via email.' },
-                                    { label: 'Push Notifications', desc: 'Real-time alerts for messages and campaign status in your browser.' },
-                                    { label: 'Marketplace Updates', desc: 'Stay informed about new campaigns and high-engaging influencers.' },
-                                    { label: 'Chat Messages', desc: 'Instant alerts when you receive a message from a collaborator.' },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center justify-between p-6 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-md group">
-                                        <div className="max-w-[70%]">
-                                            <h4 className="font-bold text-gray-900 mb-1">{item.label}</h4>
-                                            <p className="text-xs text-gray-500">{item.desc}</p>
-                                        </div>
-                                        <div className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" defaultChecked className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Placeholder for other sections */}
-                        {(activeSection === 'security' || activeSection === 'billing' || activeSection === 'team' || activeSection === 'help') && (
-                            <div className="flex flex-col items-center justify-center h-[400px] text-center">
-                                {(() => {
-                                    const section = sections.find(s => s.id === activeSection);
-                                    if (!section) return null;
-                                    const Icon = section.icon;
-                                    return <Icon className="w-16 h-16 text-gray-100 mb-4" />;
-                                })()}
-                                <h3 className="text-xl font-bold text-gray-400">Section Under Development</h3>
-                                <p className="text-gray-400 text-sm max-w-xs">We're working hard to bring you the best security and management tools.</p>
                             </div>
                         )}
                     </div>
@@ -147,3 +204,10 @@ export default function SettingsPage() {
     );
 }
 
+export default function SettingsPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+            <SettingsPageContent />
+        </Suspense>
+    );
+}
