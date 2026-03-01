@@ -15,6 +15,9 @@ export default function EditCampaignPage() {
     const [submitting, setSubmitting] = useState(false);
     const [campaign, setCampaign] = useState<any>(null);
 
+    // Get today's date in YYYY-MM-DD format for min date
+    const today = new Date().toISOString().split('T')[0];
+
     useEffect(() => {
         if (campaignId) {
             loadCampaign();
@@ -147,24 +150,30 @@ export default function EditCampaignPage() {
                         <input
                             name="budgetMin"
                             type="number"
-                            min="0"
+                            min="100"
+                            max="1000000"
+                            step="1"
                             required
                             defaultValue={campaign.budgetMin}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                             placeholder="e.g. 5000"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Min: NPR 100, Max: NPR 1,000,000</p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Budget (NPR)</label>
                         <input
                             name="budgetMax"
                             type="number"
-                            min="0"
+                            min="100"
+                            max="1000000"
+                            step="1"
                             required
                             defaultValue={campaign.budgetMax}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                             placeholder="e.g. 15000"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Min: NPR 100, Max: NPR 1,000,000</p>
                     </div>
                 </div>
 
@@ -191,10 +200,12 @@ export default function EditCampaignPage() {
                         <input
                             name="deadline"
                             type="date"
+                            min={today}
                             required
                             defaultValue={campaign.deadline ? new Date(campaign.deadline).toISOString().split('T')[0] : ''}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Must be a future date</p>
                     </div>
                 </div>
 
