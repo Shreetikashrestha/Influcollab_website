@@ -146,3 +146,28 @@ export const deleteUser = async (id: string) => {
         );
     }
 };
+
+/**
+ * Get admin dashboard stats
+ */
+export const getAdminStats = async () => {
+    try {
+        const response = await axios.get('api/users/admin/stats');
+        return response.data;
+    } catch (err: Error | any) {
+        console.error('getAdminStats API error:', err);
+        return {
+            success: false,
+            message: err.response?.data?.message || err.message || "Failed to fetch admin stats",
+            data: {
+                totalUsers: 0,
+                influencers: 0,
+                brands: 0,
+                admins: 0,
+                userGrowth: '+0%',
+                monthlyData: []
+            }
+        };
+    }
+};
+
