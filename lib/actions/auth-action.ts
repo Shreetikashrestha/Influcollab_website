@@ -29,10 +29,11 @@ export const handleRegister = async (formData: any) => {
 
 export const handleLogin = async (formData: any) => {
     try {
-        const result = (await loginUser(formData)) as any;
+        const { rememberMe, ...loginData } = formData;
+        const result = (await loginUser(loginData)) as any;
         if (result.success) {
-            await setAuthToken(result.data.token);
-            await setUserData(result.data.user);
+            await setAuthToken(result.data.token, rememberMe || false);
+            await setUserData(result.data.user, rememberMe || false);
             return {
                 success: true,
                 message: "Login successful",
