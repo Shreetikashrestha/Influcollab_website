@@ -12,6 +12,9 @@ export const createApplication = async (applicationData: any): Promise<any> => {
     }
 }
 
+// Alias for better naming
+export const submitApplication = createApplication;
+
 export const fetchMyApplications = async (): Promise<any> => {
     try {
         const response = await axiosInstance.get(API.APPLICATION.MY_APPLICATIONS);
