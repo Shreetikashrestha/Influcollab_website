@@ -24,9 +24,15 @@ export const sendMessage = async (messageData: {
     receiverId?: string;
     content: string;
     campaignId?: string;
-}): Promise<any> => {
+} | FormData): Promise<any> => {
     try {
-        const response = await axiosInstance.post(API.MESSAGE.SEND, messageData);
+        const config = messageData instanceof FormData ? {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        } : {};
+        
+        const response = await axiosInstance.post(API.MESSAGE.SEND, messageData, config);
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Failed to send message");
@@ -44,9 +50,11 @@ export const markMessageAsRead = async (messageId: string): Promise<any> => {
 
 export const markConversationAsRead = async (conversationId: string): Promise<any> => {
     try {
-        const response = await axiosInstance.patch(`/messages/conversation/${conversationId}/read`);
+        const response = await axiosInstance.patch(API.MESSAGE.MARK_CONVERSATION_READ(conversationId));
         return response.data;
     } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Failed to mark conversation as read");
+        // Silently fail - this is not critical
+        console.error('Failed to mark conversation as read:', error);
+        return { success: false };
     }
 }

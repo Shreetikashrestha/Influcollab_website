@@ -59,7 +59,7 @@ export const ConversationsList = ({ conversations, currentUserId, onSelect, onSt
                 setSearchResults(response.data);
             }
         } catch (error) {
-            console.error('User search error:', error);
+            setSearchResults([]);
         } finally {
             setIsSearchingUsers(false);
         }
