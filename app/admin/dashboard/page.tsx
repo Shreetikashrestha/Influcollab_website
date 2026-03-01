@@ -4,12 +4,10 @@ import React, { useState, useEffect } from 'react';
 import {
     Users,
     Megaphone,
-    CircleDollarSign,
     Bell,
     Plus,
     X,
-    TrendingUp,
-    Activity
+    TrendingUp
 } from 'lucide-react';
 import {
     BarChart,
@@ -26,99 +24,72 @@ import { adminFetchAllCampaigns } from '@/lib/api/application';
 export default function AdminDashboard() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [errors, setErrors] = useState<string[]>([]);
     const [stats, setStats] = useState({
         totalUsers: 0,
         activeCampaigns: 0,
-        revenue: 0,
         userGrowth: '+0%',
-        campaignGrowth: '+0%',
-        revenueGrowth: '+0%'
+        campaignGrowth: '+0%'
     });
     const [chartData, setChartData] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            const errorMessages: string[] = [];
-            
             try {
-                // Fetch users with error handling
+                // Fetch admin stats
                 try {
-                    const usersRes = await getAllUsers({ limit: 1000 });
-                    if (usersRes && usersRes.success) {
-                        setStats(prev => ({ ...prev, totalUsers: usersRes.total || 0 }));
+                    const { getAdminStats } = await import('@/lib/api/admin');
+                    const adminStatsRes: any = await getAdminStats();
+                    
+                    if (adminStatsRes && adminStatsRes.success) {
+                        const data = adminStatsRes.data;
+                        setStats(prev => ({ 
+                            ...prev, 
+                            totalUsers: data.totalUsers || 0,
+                            userGrowth: data.userGrowth || '+0%'
+                        }));
                         
-                        // Calculate user growth by month
-                        const users = usersRes.users || [];
-                        const monthlyData = calculateMonthlyGrowth(users);
-                        setChartData(monthlyData);
-                    } else {
-                        console.warn('Users API returned unsuccessful response:', usersRes);
-                        errorMessages.push(`Users: ${usersRes?.message || 'Unknown error'}`);
-                        setStats(prev => ({ ...prev, totalUsers: 0 }));
-                        setChartData([]);
+                        // Use real monthly data
+                        if (data.monthlyData && data.monthlyData.length > 0) {
+                            const chartData = data.monthlyData.slice(0, 6).map((month: any) => ({
+                                name: month.name,
+                                val: month.total || 0
+                            }));
+                            setChartData(chartData);
+                        }
                     }
-                } catch (userError: any) {
-                    console.error('Failed to fetch users:', userError);
-                    errorMessages.push(`Users: ${userError.message || 'Network error'}`);
-                    setStats(prev => ({ ...prev, totalUsers: 0 }));
-                    setChartData([]);
+                } catch (statsError: any) {
+                    console.error('Failed to fetch admin stats:', statsError);
                 }
 
-                // Fetch campaigns with error handling
+                // Fetch campaigns
                 try {
                     const campaignsRes = await adminFetchAllCampaigns({ limit: 1000 });
                     if (campaignsRes && campaignsRes.success) {
                         const activeCampaigns = campaignsRes.campaigns?.filter((c: any) => c.status === 'active').length || 0;
-                        setStats(prev => ({ ...prev, activeCampaigns }));
-                    } else {
-                        console.warn('Campaigns API returned unsuccessful response:', campaignsRes);
-                        errorMessages.push(`Campaigns: ${campaignsRes?.message || 'Unknown error'}`);
-                        setStats(prev => ({ ...prev, activeCampaigns: 0 }));
+                        const totalCampaigns = campaignsRes.campaigns?.length || 0;
+                        const lastMonthCampaigns = campaignsRes.campaigns?.filter((c: any) => {
+                            const createdDate = new Date(c.createdAt);
+                            const lastMonth = new Date();
+                            lastMonth.setMonth(lastMonth.getMonth() - 1);
+                            return createdDate >= lastMonth;
+                        }).length || 0;
+                        
+                        const campaignGrowth = totalCampaigns > 0 && lastMonthCampaigns > 0
+                            ? `+${((lastMonthCampaigns / totalCampaigns) * 100).toFixed(1)}%`
+                            : '+0%';
+                        
+                        setStats(prev => ({ 
+                            ...prev, 
+                            activeCampaigns,
+                            campaignGrowth
+                        }));
                     }
                 } catch (campaignError: any) {
                     console.error('Failed to fetch campaigns:', campaignError);
-                    errorMessages.push(`Campaigns: ${campaignError.message || 'Network error'}`);
-                    setStats(prev => ({ ...prev, activeCampaigns: 0 }));
                 }
-
-                // Fetch payment stats with error handling
-                try {
-                    const { fetchTransactionStats } = await import('@/lib/api/payment');
-                    const paymentRes = await fetchTransactionStats();
-                    if (paymentRes && paymentRes.success) {
-                        setStats(prev => ({ 
-                            ...prev, 
-                            revenue: paymentRes.stats?.totalRevenue || 0 
-                        }));
-                    } else {
-                        console.warn('Payment stats API returned unsuccessful response:', paymentRes);
-                        errorMessages.push(`Payments: ${paymentRes?.message || 'Unknown error'}`);
-                        setStats(prev => ({ ...prev, revenue: 0 }));
-                    }
-                } catch (paymentError: any) {
-                    console.error('Payment stats not available:', paymentError);
-                    errorMessages.push(`Payments: ${paymentError.message || 'Feature not available'}`);
-                    setStats(prev => ({ ...prev, revenue: 0 }));
-                }
-
-                setErrors(errorMessages);
 
             } catch (error: any) {
                 console.error('Failed to fetch dashboard data:', error);
-                errorMessages.push(`General: ${error.message || 'Unknown error'}`);
-                setErrors(errorMessages);
-                
-                // Set all fallback data
-                setStats({
-                    totalUsers: 0,
-                    activeCampaigns: 0,
-                    revenue: 0,
-                    userGrowth: '+0%',
-                    campaignGrowth: '+0%',
-                    revenueGrowth: '+0%'
-                });
-                setChartData([]);
             } finally {
                 setLoading(false);
             }
@@ -126,31 +97,6 @@ export default function AdminDashboard() {
 
         fetchData();
     }, []);
-
-    const calculateMonthlyGrowth = (users: any[]) => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        const currentYear = new Date().getFullYear();
-        
-        if (!users || users.length === 0) {
-            return months.map(month => ({ name: month, val: 0 }));
-        }
-        
-        return months.map(month => {
-            const monthIndex = months.indexOf(month);
-            const usersInMonth = users.filter((user: any) => {
-                if (!user.createdAt) return false;
-                try {
-                    const createdDate = new Date(user.createdAt);
-                    return createdDate.getMonth() === monthIndex && createdDate.getFullYear() === currentYear;
-                } catch (error) {
-                    console.warn('Invalid date format for user:', user._id);
-                    return false;
-                }
-            }).length;
-            
-            return { name: month, val: usersInMonth };
-        });
-    };
 
     const STATS = [
         { 
@@ -168,15 +114,7 @@ export default function AdminDashboard() {
             icon: Megaphone, 
             color: 'text-purple-600', 
             bg: 'bg-purple-50' 
-        },
-        { 
-            label: 'Revenue', 
-            value: loading ? '...' : `NPR ${stats.revenue.toLocaleString()}`, 
-            grow: stats.revenueGrowth, 
-            icon: CircleDollarSign, 
-            color: 'text-green-600', 
-            bg: 'bg-green-50' 
-        },
+        }
     ];
 
     return (
@@ -201,30 +139,8 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            {/* Error Messages */}
-            {errors.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8">
-                    <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-white text-xs font-bold">!</span>
-                        </div>
-                        <div>
-                            <h3 className="text-amber-800 font-bold text-sm mb-2">API Connection Issues</h3>
-                            <ul className="text-amber-700 text-xs space-y-1">
-                                {errors.map((error, index) => (
-                                    <li key={index}>• {error}</li>
-                                ))}
-                            </ul>
-                            <p className="text-amber-600 text-xs mt-3 font-medium">
-                                Please ensure the backend server is running on port 5050 and you have admin privileges.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                 {STATS.map((s, i) => (
                     <div key={i} className="bg-white p-7 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-6">
@@ -243,9 +159,9 @@ export default function AdminDashboard() {
             </div>
 
             {/* Analytics & Activity Row */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 {/* Chart Section */}
-                <div className="xl:col-span-2 bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+                <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="font-black text-gray-900 text-lg tracking-tight">User Growth Analytics</h3>
@@ -291,31 +207,6 @@ export default function AdminDashboard() {
                                 </BarChart>
                             </ResponsiveContainer>
                         )}
-                    </div>
-                </div>
-
-                {/* Quick Activity */}
-                <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-                    <h3 className="font-black text-gray-900 text-lg tracking-tight mb-8">System Health</h3>
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                            <div className="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
-                                <Activity size={24} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-black text-gray-900">API Performance</p>
-                                <p className="text-xs font-bold text-emerald-500">99.9% Uptime</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                <Users size={24} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-black text-gray-900">Total Users</p>
-                                <p className="text-xs font-bold text-blue-500">{stats.totalUsers} Registered</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
