@@ -47,7 +47,6 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginForm) => {
         setError("");
         try {
-            // Don't send the role to backend - it comes from the database
             const { role, ...loginData } = data;
             const res = await handleLogin(loginData);
             if (!res.success) {
@@ -86,7 +85,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <RoleSelector
-                    selectedRole={selectedRole}
+                    selectedRole={selectedRole as "Influencer" | "Brand"}
                     onChange={(role) => setValue("role", role)}
                 />
 
