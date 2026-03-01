@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
 import {
     LayoutDashboard,
     MessageSquare,
@@ -24,29 +25,73 @@ export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
     const isBrand = user?.isInfluencer === false;
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+    useEffect(() => {
+        const fetchUnreadCounts = async () => {
+            try {
+                // Fetch unread messages count
+                const messagesRes = await fetch('/api/messages/conversations', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (messagesRes.ok) {
+                    const messagesData = await messagesRes.json();
+                    if (messagesData.success && messagesData.conversations) {
+                        const totalUnread = messagesData.conversations.reduce((sum: number, conv: any) => {
+                            return sum + (conv.unreadCount?.[user?._id] || 0);
+                        }, 0);
+                        setUnreadMessages(totalUnread);
+                    }
+                }
+
+                // Fetch unread notifications count
+                const notifRes = await fetch('/api/notifications/unread-count', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (notifRes.ok) {
+                    const notifData = await notifRes.json();
+                    if (notifData.success) {
+                        setUnreadNotifications(notifData.count || 0);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch unread counts:', error);
+            }
+        };
+
+        if (user?._id) {
+            fetchUnreadCounts();
+            // Refresh every 30 seconds
+            const interval = setInterval(fetchUnreadCounts, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [user?._id]);
 
 
     const influencerLinks = [
         { name: "Home", href: "/influencer", icon: Home },
         { name: "Discover", href: "/campaigns", icon: Search },
-        { name: "Messages", href: "/messages", icon: MessageSquare, badge: 5 },
-        { name: "Billing", href: "/user/billing", icon: Wallet },
+        { name: "Messages", href: "/messages", icon: MessageSquare, badge: unreadMessages },
         { name: "Profile", href: "/user/profile", icon: UserCircle },
     ];
 
     const brandLinks = [
         { name: "Dashboard", href: "/brand", icon: LayoutDashboard },
         { name: "Find Influencers", href: "/influencers", icon: Search },
-        { name: "Messages", href: "/messages", icon: MessageSquare, badge: 8 },
+        { name: "Messages", href: "/messages", icon: MessageSquare, badge: unreadMessages },
         { name: "Brand Profile", href: "/user/profile", icon: UserCircle },
-        { name: "Billing", href: "/brand/billing", icon: CreditCard },
         { name: "Analytics", href: "/analytics", icon: BarChart3 },
     ];
 
     const menuLinks = isBrand ? brandLinks : influencerLinks;
 
     const bottomLinks = [
-        { name: "Notifications", href: "/notifications", icon: Bell, badge: isBrand ? 8 : 5 },
+        { name: "Notifications", href: "/notifications", icon: Bell, badge: unreadNotifications },
         { name: "Settings", href: "/settings", icon: Settings },
     ];
 
@@ -95,9 +140,9 @@ export default function Sidebar() {
                                         <Icon className={`w-5 h-5 transition-colors ${isActive ? "text-white" : "text-slate-400 group-hover:text-slate-900"}`} />
                                         <span className="ml-4 text-[15px] font-semibold">{link.name}</span>
                                     </div>
-                                    {link.badge && !isActive && (
-                                        <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                                            {link.badge}
+                                    {link.badge && link.badge > 0 && !isActive && (
+                                        <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                                            {link.badge > 99 ? '99+' : link.badge}
                                         </span>
                                     )}
                                 </Link>
@@ -125,9 +170,9 @@ export default function Sidebar() {
                                         <Icon className={`w-5 h-5 transition-colors ${isActive ? "text-white" : "text-slate-400 group-hover:text-slate-900"}`} />
                                         <span className="ml-4 text-[15px] font-semibold">{link.name}</span>
                                     </div>
-                                    {link.badge && !isActive && (
-                                        <span className="flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                                            {link.badge}
+                                    {link.badge && link.badge > 0 && !isActive && (
+                                        <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                                            {link.badge > 99 ? '99+' : link.badge}
                                         </span>
                                     )}
                                 </Link>

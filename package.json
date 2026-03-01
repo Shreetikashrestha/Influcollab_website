@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -21,6 +21,7 @@
     "@types/axios": "^0.9.36",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "emoji-picker-react": "^4.18.0",
     "lucide-react": "^0.563.0",
     "next": "16.0.10",
     "react": "19.2.1",
@@ -28,6 +29,7 @@
     "react-hook-form": "^7.69.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.7.0",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.3",
     "zod": "^4.2.1"
   },
