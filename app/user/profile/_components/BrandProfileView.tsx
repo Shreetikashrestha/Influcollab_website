@@ -87,7 +87,13 @@ export const BrandProfileView = ({ user, profile, onEdit, brandStats, campaigns 
                             <Briefcase className="w-4 h-4 mr-2" /> {profile?.industry || 'Industry not set'}
                         </p>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-gray-400 text-sm mb-6">
-                            <span className="flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile?.headquarters?.city || 'HQ City'}, {profile?.headquarters?.country || 'Country'}</span>
+                            <span className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-1" /> 
+                                {profile?.headquarters?.city && profile?.headquarters?.country 
+                                    ? `${profile.headquarters.city}, ${profile.headquarters.country}`
+                                    : profile?.headquarters?.city || profile?.headquarters?.country || 'Location not set'
+                                }
+                            </span>
                             <span className="flex items-center"><Globe className="w-4 h-4 mr-1" /> {profile?.website || 'No website'}</span>
                         </div>
                         <div className="flex items-center justify-center md:justify-start space-x-3">
@@ -113,17 +119,42 @@ export const BrandProfileView = ({ user, profile, onEdit, brandStats, campaigns 
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {stats.map((s, i) => (
-                    <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center space-x-3 mb-2">
-                            <div className="p-2 bg-gray-50 rounded-lg">
-                                <s.icon className={`w-4 h-4 ${s.color}`} />
+                {stats.map((s, i) => {
+                    const isApplications = s.label === 'Applications';
+                    
+                    if (isApplications) {
+                        return (
+                            <Link 
+                                key={i} 
+                                href="/applications"
+                                className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer"
+                            >
+                                <div className="flex items-center space-x-3 mb-2">
+                                    <div className="p-2 bg-gray-50 rounded-lg">
+                                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
+                                </div>
+                                <p className="text-2xl font-black text-gray-900">{s.value}</p>
+                            </Link>
+                        );
+                    }
+                    
+                    return (
+                        <div 
+                            key={i} 
+                            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm"
+                        >
+                            <div className="flex items-center space-x-3 mb-2">
+                                <div className="p-2 bg-gray-50 rounded-lg">
+                                    <s.icon className={`w-4 h-4 ${s.color}`} />
+                                </div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
                             </div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
+                            <p className="text-2xl font-black text-gray-900">{s.value}</p>
                         </div>
-                        <p className="text-2xl font-black text-gray-900">{s.value}</p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Content Tabs */}
@@ -149,20 +180,40 @@ export const BrandProfileView = ({ user, profile, onEdit, brandStats, campaigns 
                                 { name: 'Instagram', icon: Instagram, color: 'text-pink-600', link: profile?.socialLinks?.instagram },
                                 { name: 'TikTok', icon: TikTokIcon, color: 'text-black', link: profile?.socialLinks?.tiktok },
                                 { name: 'Facebook', icon: FacebookIcon, color: 'text-blue-700', link: profile?.socialLinks?.facebook },
-                            ].map((social) => (
-                                <a
-                                    key={social.name}
-                                    href={social.link || undefined}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-gray-200 transition-all cursor-pointer"
-                                >
-                                    <social.icon className={`w-5 h-5 ${social.color} mr-3`} />
-                                    <span className="text-sm font-bold text-gray-700">
-                                        {social.link ? social.link.replace(/^https?:\/\//, '').replace(/\/$/, '') : 'Connect'}
-                                    </span>
-                                </a>
-                            ))}
+                            ].map((social) => {
+                                if (!social.link) {
+                                    return (
+                                        <div
+                                            key={social.name}
+                                            className="flex items-center p-4 bg-gray-50 rounded-2xl border border-transparent opacity-50"
+                                        >
+                                            <social.icon className={`w-5 h-5 ${social.color} mr-3`} />
+                                            <span className="text-sm font-bold text-gray-400">Not Connected</span>
+                                        </div>
+                                    );
+                                }
+                                
+                                // Ensure URL has protocol
+                                const url = social.link.startsWith('http') ? social.link : `https://${social.link}`;
+                                
+                                return (
+                                    <a
+                                        key={social.name}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-300 hover:shadow-md transition-all group"
+                                    >
+                                        <social.icon className={`w-5 h-5 ${social.color} mr-3 group-hover:scale-110 transition-transform`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-gray-400 uppercase">{social.name}</p>
+                                            <p className="text-sm font-bold text-gray-700 truncate">
+                                                {social.link.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                                            </p>
+                                        </div>
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -207,23 +258,12 @@ export const BrandProfileView = ({ user, profile, onEdit, brandStats, campaigns 
                 </div>
 
                 <div className="space-y-8">
-                    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center">
-                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Users className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">Build Your Team</h4>
-                        <p className="text-xs text-gray-500 mb-6">Invite team members to manage your brand campaigns and messaging collaboratively.</p>
-                        <button className="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all">
-                            Manage Teams
-                        </button>
-                    </div>
-
                     <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl shadow-blue-200">
                         <h4 className="text-xl font-bold mb-2">Need Help?</h4>
                         <p className="text-blue-100 text-xs mb-6 opacity-80">Our dedicated brand success team is here to help you scale your influencer marketing efforts.</p>
-                        <button className="w-full py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all">
+                        <Link href="/settings?section=help" className="block w-full py-3 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all text-center">
                             Contact Support
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

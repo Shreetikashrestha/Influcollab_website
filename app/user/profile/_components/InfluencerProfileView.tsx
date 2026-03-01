@@ -46,6 +46,41 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
         loadData();
     }, [user?._id]);
 
+    // Calculate profile completion
+    const calculateCompletion = () => {
+        let basicInfoScore = 0;
+        let socialScore = 0;
+        let portfolioScore = 0;
+
+        // Basic Info (40 points total)
+        if (user?.fullName) basicInfoScore += 10;
+        if (user?.email) basicInfoScore += 10;
+        if (profile?.bio) basicInfoScore += 10;
+        if (profile?.location?.city && profile?.location?.country) basicInfoScore += 10;
+
+        // Social Accounts (30 points total)
+        if (profile?.socialAccounts && profile.socialAccounts.length > 0) {
+            socialScore = Math.min(30, profile.socialAccounts.length * 10);
+        }
+
+        // Portfolio (30 points total)
+        if (profile?.portfolio && profile.portfolio.length > 0) {
+            portfolioScore = Math.min(30, profile.portfolio.length * 10);
+        }
+
+        const total = basicInfoScore + socialScore + portfolioScore;
+        
+        return {
+            total,
+            basicInfo: (basicInfoScore / 40) * 100,
+            social: (socialScore / 30) * 100,
+            portfolio: (portfolioScore / 30) * 100,
+            label: total >= 90 ? 'Excellent' : total >= 70 ? 'Good' : total >= 50 ? 'Fair' : 'Incomplete'
+        };
+    };
+
+    const completion = calculateCompletion();
+
     const totalFollowers = profile?.socialAccounts?.reduce((acc: number, curr: any) => acc + curr.followers, 0) || 0;
     const avgEngagement = profile?.socialAccounts?.length > 0
         ? (profile.socialAccounts.reduce((acc: number, curr: any) => acc + curr.engagementRate, 0) / profile.socialAccounts.length).toFixed(1)
@@ -182,13 +217,37 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
                                 {profile?.bio || 'No bio available yet. Tell brands about yourself!'}
                             </p>
 
-                            <h3 className="text-xl font-bold text-gray-900 mb-6">Category & Niche</h3>
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {(profile?.categories || ['Lifestyle', 'Fashion', 'Travel']).map((cat: string) => (
-                                    <span key={cat} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold border border-blue-100">
-                                        {cat}
-                                    </span>
-                                ))}
+                            <h3 className="text-xl font-bold text-gray-900 mb-6">Categories & Niches</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {profile?.categories && profile.categories.length > 0 ? (
+                                            profile.categories.map((cat: string) => (
+                                                <span key={cat} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold border border-blue-100">
+                                                    {cat}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-400">No categories selected yet</p>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Niches</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {profile?.niches && profile.niches.length > 0 ? (
+                                            profile.niches.map((niche: string) => (
+                                                <span key={niche} className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-xs font-bold border border-purple-100">
+                                                    {niche}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-400">No niches selected yet</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             <h3 className="text-xl font-bold text-gray-900 mb-6">Social Accounts</h3>
@@ -309,7 +368,6 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
                                             <div className="p-2 bg-white rounded-xl text-blue-600 shadow-sm">
                                                 <Users className="w-5 h-5" />
                                             </div>
-                                            <span className="text-[10px] font-black text-blue-600 bg-white px-2 py-1 rounded-lg uppercase">+12% vs last month</span>
                                         </div>
                                         <p className="text-sm font-bold text-gray-500 mb-1">Total Reach</p>
                                         <p className="text-3xl font-black text-gray-900">{totalFollowers >= 1000 ? `${(totalFollowers / 1000).toFixed(1)}K` : totalFollowers}</p>
@@ -319,7 +377,6 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
                                             <div className="p-2 bg-white rounded-xl text-pink-600 shadow-sm">
                                                 <Heart className="w-5 h-5" />
                                             </div>
-                                            <span className="text-[10px] font-black text-pink-600 bg-white px-2 py-1 rounded-lg uppercase">+5.4% vs last month</span>
                                         </div>
                                         <p className="text-sm font-bold text-gray-500 mb-1">Average Engagement</p>
                                         <p className="text-3xl font-black text-gray-900">{avgEngagement}%</p>
@@ -328,22 +385,21 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
 
                                 <div className="mt-8 pt-8 border-t border-gray-50">
                                     <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6">Audience Demographics</h4>
-                                    <div className="space-y-4">
-                                        {[
-                                            { label: 'Female (18-24)', value: '45%' },
-                                            { label: 'Female (25-34)', value: '30%' },
-                                            { label: 'Male (18-24)', value: '15%' },
-                                            { label: 'Others', value: '10%' }
-                                        ].map((d, i) => (
-                                            <div key={i} className="flex items-center gap-4">
-                                                <span className="text-xs font-bold text-gray-600 w-24 whitespace-nowrap">{d.label}</span>
-                                                <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-600 rounded-full" style={{ width: d.value }}></div>
+                                    {profile?.audienceDemographics && profile.audienceDemographics.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {profile.audienceDemographics.map((d: any, i: number) => (
+                                                <div key={i} className="flex items-center gap-4">
+                                                    <span className="text-xs font-bold text-gray-600 w-24 whitespace-nowrap">{d.label}</span>
+                                                    <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-blue-600 rounded-full" style={{ width: `${d.percentage}%` }}></div>
+                                                    </div>
+                                                    <span className="text-xs font-black text-gray-900 w-10">{d.percentage}%</span>
                                                 </div>
-                                                <span className="text-xs font-black text-gray-900 w-10">{d.value}</span>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-400 text-center py-4">No audience demographics data available. Update your profile to add this information.</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -424,9 +480,9 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
                             <div className="pt-4 mt-4 border-t border-white/10">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">Account Health</p>
                                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div className="w-[85%] h-full bg-gradient-to-r from-green-400 to-blue-500"></div>
+                                    <div className={`h-full bg-gradient-to-r ${completion.total >= 90 ? 'from-green-400 to-blue-500' : completion.total >= 70 ? 'from-yellow-400 to-green-500' : 'from-orange-400 to-yellow-500'}`} style={{ width: `${completion.total}%` }}></div>
                                 </div>
-                                <p className="text-right text-[10px] mt-1 text-green-400 font-bold">Excellent</p>
+                                <p className={`text-right text-[10px] mt-1 font-bold ${completion.total >= 90 ? 'text-green-400' : completion.total >= 70 ? 'text-yellow-400' : 'text-orange-400'}`}>{completion.label}</p>
                             </div>
                         </div>
                     </div>
@@ -435,18 +491,42 @@ export const InfluencerProfileView = ({ user, profile, onEdit, onUpdate }: { use
                         <h3 className="text-xl font-bold text-gray-900 mb-6">Profile Completion</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-green-500" /> Basic Info</span>
-                                <span className="font-bold text-gray-900">100%</span>
+                                <span className="text-gray-500 flex items-center">
+                                    {completion.basicInfo === 100 ? (
+                                        <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                                    ) : (
+                                        <Clock className="w-4 h-4 mr-2 text-orange-500" />
+                                    )}
+                                    Basic Info
+                                </span>
+                                <span className="font-bold text-gray-900">{Math.round(completion.basicInfo)}%</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-green-500" /> Social Accounts</span>
-                                <span className="font-bold text-gray-900">80%</span>
+                                <span className="text-gray-500 flex items-center">
+                                    {completion.social >= 80 ? (
+                                        <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                                    ) : (
+                                        <Clock className="w-4 h-4 mr-2 text-orange-500" />
+                                    )}
+                                    Social Accounts
+                                </span>
+                                <span className="font-bold text-gray-900">{Math.round(completion.social)}%</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500 flex items-center"><Clock className="w-4 h-4 mr-2 text-orange-500" /> Portfolio</span>
-                                <span className="font-bold text-gray-900">60%</span>
+                                <span className="text-gray-500 flex items-center">
+                                    {completion.portfolio >= 80 ? (
+                                        <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                                    ) : (
+                                        <Clock className="w-4 h-4 mr-2 text-orange-500" />
+                                    )}
+                                    Portfolio
+                                </span>
+                                <span className="font-bold text-gray-900">{Math.round(completion.portfolio)}%</span>
                             </div>
-                            <button className="w-full mt-4 py-3 text-blue-600 font-bold text-sm bg-blue-50 rounded-xl hover:bg-blue-100 transition-all">
+                            <button 
+                                onClick={onEdit}
+                                className="w-full mt-4 py-3 text-blue-600 font-bold text-sm bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
+                            >
                                 Complete Profile
                             </button>
                         </div>

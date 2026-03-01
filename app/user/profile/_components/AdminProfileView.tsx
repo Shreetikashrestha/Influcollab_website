@@ -1,14 +1,39 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Users, Briefcase, FileText, AlertTriangle, Settings, BarChart3, Clock } from 'lucide-react';
+import { getAdminStats } from '@/lib/api/admin';
 
 export const AdminProfileView = ({ user, onEdit }: { user: any, onEdit: () => void }) => {
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+        activeCampaigns: 0,
+        pendingReports: 0,
+        totalTransactions: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadStats = async () => {
+            try {
+                const res = await getAdminStats();
+                if ((res as any).success) {
+                    setStats((res as any).data);
+                }
+            } catch (error) {
+                console.error('Failed to load admin stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadStats();
+    }, []);
+
     const adminStats = [
-        { label: 'Total Users', value: '1,284', icon: Users, color: 'text-blue-600' },
-        { label: 'Active Campaigns', value: '42', icon: Briefcase, color: 'text-green-600' },
-        { label: 'Pending Reports', value: '7', icon: AlertTriangle, color: 'text-red-500' },
-        { label: 'Transactions', value: '$12.4K', icon: BarChart3, color: 'text-purple-600' },
+        { label: 'Total Users', value: loading ? '...' : stats.totalUsers.toLocaleString(), icon: Users, color: 'text-blue-600' },
+        { label: 'Active Campaigns', value: loading ? '...' : stats.activeCampaigns, icon: Briefcase, color: 'text-green-600' },
+        { label: 'Pending Reports', value: loading ? '...' : stats.pendingReports, icon: AlertTriangle, color: 'text-red-500' },
+        { label: 'Transactions', value: loading ? '...' : `$${(stats.totalTransactions / 1000).toFixed(1)}K`, icon: BarChart3, color: 'text-purple-600' },
     ];
 
     return (
