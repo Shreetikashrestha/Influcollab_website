@@ -6,6 +6,7 @@ export const API = {
         LOGIN: "api/auth/login",
         WHOAMI: "api/auth/whoami",
         UPDATE_PROFILE: "api/users/update",
+        CHANGE_PASSWORD: "api/auth/change-password",
         LOGOUT: "api/auth/logout",
         SEARCH_MESSAGING: "api/users/search-messaging"
     },
@@ -31,6 +32,7 @@ export const API = {
         CHAT: (id: string) => `api/messages/conversation/${id}`,
         SEND: 'api/messages/send',
         READ: (id: string) => `api/messages/${id}/read`,
+        MARK_CONVERSATION_READ: (id: string) => `api/messages/conversation/${id}/read`,
     },
     NOTIFICATION: {
         LIST: 'api/notifications',
@@ -62,5 +64,11 @@ export const API = {
         MY_TRANSACTIONS: "api/payments/my-transactions",
         BALANCE: "api/payments/balance",
         PAYOUT: "api/payments/payout"
+    },
+    SUPPORT: {
+        CREATE_TICKET: "api/support/tickets",
+        MY_TICKETS: "api/support/tickets/my",
+        ALL_TICKETS: "api/support/tickets",
+        UPDATE_TICKET: (id: string) => `api/support/tickets/${id}`
     }
 }
