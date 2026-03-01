@@ -38,15 +38,14 @@ export default function UserApprovalPage() {
                 search: searchTerm
             });
             
-            console.log('Users API Response:', response); // Debug log
+            console.log('Users API Response:', response);
             
-            if (response && response.success) {
-                setUsers(response.users || []);
-                setTotal(response.total || 0);
+            if (response && (response as any).success) {
+                setUsers((response as any).users || []);
+                setTotal((response as any).total || 0);
                 setError(null);
             } else {
-                // Handle unsuccessful response
-                const errorMsg = response?.message || "Failed to fetch users";
+                const errorMsg = (response as any)?.message || "Failed to fetch users";
                 setError(errorMsg);
                 setUsers([]);
                 setTotal(0);

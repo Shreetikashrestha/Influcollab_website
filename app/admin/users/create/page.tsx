@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createUser } from "@/lib/api/admin";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function CreateUserPage() {
     const router = useRouter();
@@ -39,12 +40,17 @@ export default function CreateUserPage() {
             const response = await createUser(data) as any;
 
             if (response.success) {
+                toast.success("User created successfully!");
                 router.push("/admin/users");
             } else {
-                setError(response.message || "Failed to create user");
+                const errorMsg = response.message || "Failed to create user";
+                setError(errorMsg);
+                toast.error(errorMsg);
             }
         } catch (err: any) {
-            setError(err.message || "Failed to create user");
+            const errorMsg = err.message || "Failed to create user";
+            setError(errorMsg);
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }
