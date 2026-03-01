@@ -257,28 +257,6 @@ export default function InfluencerProfilePage({ params }: { params: Promise<{ id
                             </div>
                         </div>
 
-                        {/* Audience Insights Mock */}
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[40px] p-8 text-white relative overflow-hidden">
-                            <BarChart3 className="absolute -right-8 -bottom-8 w-48 h-48 opacity-10 rotate-12" />
-                            <div className="relative">
-                                <h3 className="text-xl font-black mb-1">Audience Deep-Dive</h3>
-                                <p className="text-slate-400 text-sm font-medium mb-8">Data powered by creator-linked accounts</p>
-
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    {[
-                                        { label: "Male / Female", val: "42% - 58%" },
-                                        { label: "Primary Region", val: "Nepal / SEA" },
-                                        { label: "Avg. Likes", val: "2.4K" },
-                                        { label: "Content Frequency", val: "3.2 / week" }
-                                    ].map((stat, i) => (
-                                        <div key={i}>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">{stat.label}</p>
-                                            <p className="text-lg font-black">{stat.val}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                 </div>
