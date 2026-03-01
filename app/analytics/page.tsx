@@ -22,7 +22,8 @@ import {
     DollarSign,
     ArrowUpRight,
     Download,
-    Briefcase
+    Briefcase,
+    RefreshCw
 } from 'lucide-react';
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
@@ -31,21 +32,30 @@ export default function AnalyticsPage() {
     const { user } = useAuth();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+    const loadData = async () => {
+        try {
+            const res = await fetchBrandStats();
+            if (res.success) {
+                setStats(res.data);
+                setLastUpdated(new Date());
+            }
+        } catch (err) {
+            console.error("Failed to load analytics data:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const res = await fetchBrandStats();
-                if (res.success) {
-                    setStats(res.data);
-                }
-            } catch (err) {
-                console.error("Failed to load analytics data:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
+        
+        const interval = setInterval(() => {
+            loadData();
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {
@@ -84,8 +94,24 @@ export default function AnalyticsPage() {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Performance Analytics</h1>
-                    <p className="text-slate-400 font-medium">Detailed insights across all your influencer campaigns.</p>
+                    <p className="text-slate-400 font-medium">
+                        Real-time insights across all your influencer campaigns
+                        <span className="ml-2 text-xs">
+                            • Last updated: {lastUpdated.toLocaleTimeString()}
+                        </span>
+                    </p>
                 </div>
+                <button
+                    onClick={() => {
+                        setLoading(true);
+                        loadData();
+                    }}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 disabled:opacity-50"
+                >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh Data
+                </button>
             </header>
 
             {/* Top KPI Cards */}
