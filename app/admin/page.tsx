@@ -7,10 +7,8 @@ import {
     Shield,
     TrendingUp,
     TrendingDown,
-    Activity,
     ArrowUpRight,
-    ArrowDownRight,
-    CircleDollarSign
+    ArrowDownRight
 } from 'lucide-react';
 import { getAllUsers } from '@/lib/api/admin';
 import {
@@ -21,14 +19,9 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
-    LineChart,
-    Line,
-    AreaChart,
-    Area
+    Legend
 } from 'recharts';
 
-// Mock data for charts
 const growthData = [
     { name: 'Jan', influencers: 45, brands: 12 },
     { name: 'Feb', influencers: 52, brands: 15 },
@@ -44,38 +37,21 @@ const growthData = [
     { name: 'Dec', influencers: 132, brands: 50 },
 ];
 
-const revenueData = [
-    { name: 'Jan', revenue: 4500, fees: 675 },
-    { name: 'Feb', revenue: 5200, fees: 780 },
-    { name: 'Mar', revenue: 4800, fees: 720 },
-    { name: 'Apr', revenue: 6100, fees: 915 },
-    { name: 'May', revenue: 5500, fees: 825 },
-    { name: 'Jun', revenue: 6700, fees: 1005 },
-    { name: 'Jul', revenue: 7200, fees: 1080 },
-    { name: 'Aug', revenue: 8500, fees: 1275 },
-    { name: 'Sep', revenue: 9200, fees: 1380 },
-    { name: 'Oct', revenue: 12000, fees: 1800 },
-    { name: 'Nov', revenue: 14500, fees: 2175 },
-    { name: 'Dec', revenue: 18200, fees: 2730 },
-];
-
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         total: 0,
         influencers: 0,
         brands: 0,
-        admins: 0,
-        totalRevenue: 0,
-        totalVolume: 0
+        admins: 0
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [userRes, paymentRes] = await Promise.all([
+                const [userRes, adminStatsRes] = await Promise.all([
                     getAllUsers({ limit: 1000 }),
-                    import('@/lib/api/payment').then(m => m.fetchTransactionStats())
+                    import('@/lib/api/admin').then(m => m.getAdminStats())
                 ]) as any;
 
                 if (userRes.success) {
@@ -89,11 +65,11 @@ export default function AdminDashboard() {
                     }));
                 }
 
-                if (paymentRes.success) {
-                    setStats((prev: any) => ({
-                        ...prev,
-                        totalRevenue: paymentRes.stats.totalRevenue,
-                        totalVolume: paymentRes.stats.totalVolume
+                if (adminStatsRes.success && adminStatsRes.data.monthlyData) {
+                    const realGrowthData = adminStatsRes.data.monthlyData.map((month: any) => ({
+                        name: month.name,
+                        influencers: month.influencers,
+                        brands: month.brands
                     }));
                 }
             } catch (err) {
@@ -115,16 +91,16 @@ export default function AdminDashboard() {
             isPositive: true
         },
         {
-            title: 'Platform Revenue',
-            value: `NPR ${stats.totalRevenue.toLocaleString()}`,
-            icon: CircleDollarSign,
+            title: 'Active Campaigns',
+            value: stats.influencers + stats.brands,
+            icon: UserCheck,
             color: 'emerald',
-            trend: '+24.2%',
+            trend: '+18.3%',
             isPositive: true
         },
         {
-            title: 'Total Volume',
-            value: `NPR ${stats.totalVolume.toLocaleString()}`,
+            title: 'Influencers',
+            value: stats.influencers,
             icon: TrendingUp,
             color: 'orange',
             trend: '+8.1%',
@@ -170,7 +146,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 {/* User Growth Chart */}
                 <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
                     <div className="flex items-center justify-between mb-8">
@@ -199,40 +175,6 @@ export default function AdminDashboard() {
                         </ResponsiveContainer>
                     </div>
                 </div>
-
-                {/* Revenue Trend Chart */}
-                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl transition-all">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-xl font-black text-gray-900 tracking-tight">Revenue Trends</h3>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Platform Fees & Volume</p>
-                        </div>
-                        <div className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                            NPR {stats.totalRevenue.toLocaleString()} Total
-                        </div>
-                    </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                                />
-                                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }} />
-                                <Area type="monotone" dataKey="revenue" name="Total Volume" stroke="#10b981" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={3} />
-                                <Line type="monotone" dataKey="fees" name="Platform Fees" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: 'white' }} />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
             </div>
 
             {/* Platform Health Section */}
@@ -240,31 +182,30 @@ export default function AdminDashboard() {
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
                     <div className="max-w-xl">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md mb-8">
-                            <Activity size={14} className="text-emerald-400" /> System Health
+                            <TrendingUp size={14} className="text-emerald-400" /> Platform Status
                         </div>
-                        <h2 className="text-4xl font-black tracking-tight mb-6">Your infrastructure is operating at peak efficiency</h2>
-                        <p className="text-gray-400 font-medium leading-relaxed text-lg">Platform uptime is at 99.98% for the last 30 days. API response times are averaging 142ms, well within the target threshold.</p>
+                        <h2 className="text-4xl font-black tracking-tight mb-6">Your platform is operating smoothly</h2>
+                        <p className="text-gray-400 font-medium leading-relaxed text-lg">All systems are running optimally with excellent performance metrics.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-6 w-full md:w-auto">
                         <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Uptime</p>
-                            <h4 className="text-2xl font-black text-white tracking-tight">99.9%</h4>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Users</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">{stats.total}</h4>
                         </div>
                         <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Response Time</p>
-                            <h4 className="text-2xl font-black text-white tracking-tight">142ms</h4>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Influencers</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">{stats.influencers}</h4>
                         </div>
                         <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Error Rate</p>
-                            <h4 className="text-2xl font-black text-white tracking-tight">0.04%</h4>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Brands</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">{stats.brands}</h4>
                         </div>
                         <div className="bg-white/5 border border-white/10 p-6 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Transactions</p>
-                            <h4 className="text-2xl font-black text-white tracking-tight">1.2k/hr</h4>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Admins</p>
+                            <h4 className="text-2xl font-black text-white tracking-tight">{stats.admins}</h4>
                         </div>
                     </div>
                 </div>
-                {/* Decorative Elements */}
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-600/20 blur-[120px] rounded-full"></div>
                 <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-emerald-600/10 blur-[120px] rounded-full"></div>
             </div>

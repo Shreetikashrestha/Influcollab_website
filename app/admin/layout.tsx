@@ -8,7 +8,6 @@ import {
     LayoutDashboard,
     Users,
     Megaphone,
-    CircleDollarSign,
     Settings,
     LogOut,
     Heart
@@ -20,8 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const { user, loading, logout } = useAuth();
     const [stats, setStats] = useState({
         totalUsers: 0,
-        totalCampaigns: 0,
-        pendingPayments: 0
+        totalCampaigns: 0
     });
 
     useEffect(() => {
@@ -45,11 +43,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             try {
                 const { getAllUsers } = await import('@/lib/api/admin');
                 const { adminFetchAllCampaigns } = await import('@/lib/api/application');
-                const { fetchTransactionStats } = await import('@/lib/api/payment');
                 
-                // Fetch users count
                 try {
-                    const usersRes = await getAllUsers({ limit: 1 });
+                    const usersRes: any = await getAllUsers({ limit: 1 });
                     if (usersRes.success) {
                         setStats(prev => ({ ...prev, totalUsers: usersRes.total || 0 }));
                     }
@@ -57,27 +53,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     console.error('Failed to fetch users:', error);
                 }
 
-                // Fetch campaigns count
                 try {
-                    const campaignsRes = await adminFetchAllCampaigns({ limit: 1 });
+                    const campaignsRes: any = await adminFetchAllCampaigns({ limit: 1 });
                     if (campaignsRes.success) {
                         setStats(prev => ({ ...prev, totalCampaigns: campaignsRes.total || 0 }));
                     }
                 } catch (error) {
                     console.error('Failed to fetch campaigns:', error);
-                }
-
-                // Fetch payment stats
-                try {
-                    const paymentsRes = await fetchTransactionStats();
-                    if (paymentsRes.success) {
-                        setStats(prev => ({ 
-                            ...prev, 
-                            pendingPayments: paymentsRes.stats?.transactionCount || 0 
-                        }));
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch payments:', error);
                 }
             } catch (error) {
                 console.error('Failed to fetch admin stats:', error);
@@ -110,7 +92,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: "Overview", icon: LayoutDashboard, href: "/admin/dashboard", badge: null },
         { label: "Users", icon: Users, href: "/admin/users", badge: stats.totalUsers > 0 ? stats.totalUsers : null },
         { label: "Campaigns", icon: Megaphone, href: "/admin/campaigns", badge: stats.totalCampaigns > 0 ? stats.totalCampaigns : null },
-        { label: "Payments", icon: CircleDollarSign, href: "/admin/payments", badge: stats.pendingPayments > 0 ? stats.pendingPayments : null },
         { label: "Settings", icon: Settings, href: "/admin/settings", badge: null },
     ];
 
