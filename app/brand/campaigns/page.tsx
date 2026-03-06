@@ -123,8 +123,15 @@ export default function BrandCampaignsPage() {
                                 </Link>
                                 <Link
                                     href={`/campaigns/${campaign._id}/edit`}
-                                    className="block w-full text-center bg-gray-200 text-blue-700 font-bold py-3 rounded-xl shadow hover:bg-gray-300 transition-all"
+                                    className="block w-full text-center bg-gray-200 text-blue-700 font-bold py-3 rounded-xl shadow hover:bg-gray-300 transition-all group-hover:bg-white group-hover:text-blue-600"
                                     aria-label="Edit Campaign"
+                                    prefetch={false}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const editUrl = `/campaigns/${campaign._id}/edit`;
+                                        console.log('Edit button clicked. Navigating to:', editUrl);
+                                        console.log('Campaign ID:', campaign._id);
+                                    }}
                                 >
                                     Edit
                                 </Link>

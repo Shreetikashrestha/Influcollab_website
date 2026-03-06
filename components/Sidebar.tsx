@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { getProfilePictureUrl } from "@/lib/utils/image";
 import {
     LayoutDashboard,
     MessageSquare,
@@ -189,7 +190,7 @@ export default function Sidebar() {
                         <div className="w-11 h-11 rounded-full bg-auth-gradient p-[2px]">
                             <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white">
                                 <img
-                                    src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.fullName || 'User'}&background=random`}
+                                    src={getProfilePictureUrl(user?.profilePicture, user?.fullName || 'User')}
                                     alt="User"
                                     className="w-full h-full object-cover"
                                 />

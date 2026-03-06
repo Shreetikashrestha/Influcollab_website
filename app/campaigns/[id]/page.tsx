@@ -7,6 +7,7 @@ import { fetchWhoAmI } from "@/lib/api/auth";
 import { fetchUserProfile } from "@/lib/api/profile";
 import { submitApplication } from "@/lib/api/application";
 import { fetchCampaignApplications, updateApplicationStatus } from "@/lib/api/application";
+import { getCampaignImageUrl } from "@/lib/utils/image";
 import { Calendar, MapPin, Users, Briefcase, Tag, CheckCircle, Instagram, Edit3, Loader2, UserCheck, X, Check } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -184,7 +185,7 @@ export default function CampaignDetailsPage() {
                 <div className="relative h-64 w-full bg-gray-200">
                     {campaign.image ? (
                         <img
-                            src={campaign.image}
+                            src={getCampaignImageUrl(campaign.image)}
                             alt={campaign.title}
                             className="w-full h-full object-cover"
                         />

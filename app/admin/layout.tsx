@@ -8,7 +8,6 @@ import {
     LayoutDashboard,
     Users,
     Megaphone,
-    Settings,
     LogOut,
     Heart
 } from "lucide-react";
@@ -92,7 +91,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: "Overview", icon: LayoutDashboard, href: "/admin/dashboard", badge: null },
         { label: "Users", icon: Users, href: "/admin/users", badge: stats.totalUsers > 0 ? stats.totalUsers : null },
         { label: "Campaigns", icon: Megaphone, href: "/admin/campaigns", badge: stats.totalCampaigns > 0 ? stats.totalCampaigns : null },
-        { label: "Settings", icon: Settings, href: "/admin/settings", badge: null },
     ];
 
     return (

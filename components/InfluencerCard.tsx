@@ -2,6 +2,7 @@
 
 import { UserCircle, MapPin, Star, CheckCircle2, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { getProfilePictureUrl } from "@/lib/utils/image";
 
 interface InfluencerCardProps {
     userId: string;
@@ -37,7 +38,7 @@ export default function InfluencerCard({
                 <div className="relative">
                     <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 border-2 border-white shadow-sm">
                         {profilePicture ? (
-                            <img src={profilePicture} alt={fullName} className="w-full h-full object-cover" />
+                            <img src={getProfilePictureUrl(profilePicture, fullName)} alt={fullName} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-purple-50">
                                 <UserCircle className="w-8 h-8 text-purple-400" />

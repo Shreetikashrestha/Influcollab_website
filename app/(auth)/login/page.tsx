@@ -16,8 +16,7 @@ import AuthInput from "@/components/AuthInput";
 export const loginSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address" }),
     password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-    role: z.enum(["Influencer", "Brand", "Admin"]).optional(), // Optional - just for UI
-    rememberMe: z.boolean().optional(),
+    role: z.enum(["Influencer", "Brand", "Admin"]).optional(),
 });
 
 export type LoginForm = z.infer<typeof loginSchema>;
@@ -38,7 +37,6 @@ export default function LoginPage() {
         resolver: zodResolver(loginSchema),
         defaultValues: {
             role: "Influencer",
-            rememberMe: false,
         },
     });
 
@@ -107,17 +105,7 @@ export default function LoginPage() {
                     register={register("password")}
                 />
 
-                <div className="flex items-center justify-between mb-8">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                            type="checkbox"
-                            {...register("rememberMe")}
-                            className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500/20 cursor-pointer"
-                        />
-                        <span className="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                            Remember me
-                        </span>
-                    </label>
+                <div className="flex items-center justify-end mb-8">
                     <Link
                         href="/forgot-password"
                         className="text-sm text-purple-600 font-semibold hover:text-purple-700 transition-colors"

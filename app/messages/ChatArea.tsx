@@ -7,6 +7,7 @@ import { useSocket } from '@/context/SocketContext';
 import EmojiPicker from 'emoji-picker-react';
 import { VideoCallModal } from './VideoCallModal';
 import { IncomingCallNotification } from './IncomingCallNotification';
+import { getProfilePictureUrl } from '@/lib/utils/image';
 
 interface Message {
     _id: string;
@@ -171,11 +172,11 @@ export const ChatArea = ({ conversation, messages, currentUserId, onSendMessage 
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shadow-sm z-10">
                     <div className="flex items-center">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-pink-600 font-bold mr-3 overflow-hidden border-2 border-white shadow-sm">
-                            {partner?.user?.profilePicture ? (
-                                <img src={partner.user.profilePicture} alt={partner.user.fullName} className="w-full h-full object-cover" />
-                            ) : (
-                                partner?.user?.fullName[0] || '?'
-                            )}
+                            <img 
+                                src={getProfilePictureUrl(partner?.user?.profilePicture, partner?.user?.fullName || 'User')} 
+                                alt={partner?.user?.fullName || 'User'} 
+                                className="w-full h-full object-cover" 
+                            />
                         </div>
                         <div>
                             <h4 className="font-bold text-gray-900">{partner?.user?.fullName || 'Select a chat'}</h4>
@@ -228,17 +229,11 @@ export const ChatArea = ({ conversation, messages, currentUserId, onSendMessage 
                                     <div className="flex-shrink-0 w-8 h-8">
                                         {showAvatar ? (
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center text-pink-600 font-bold overflow-hidden border-2 border-white shadow-sm">
-                                                {partner?.user?.profilePicture ? (
-                                                    <img
-                                                        src={partner.user.profilePicture}
-                                                        alt={partner.user.fullName}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <span className="text-xs font-bold">
-                                                        {partner?.user?.fullName?.[0] || '?'}
-                                                    </span>
-                                                )}
+                                                <img
+                                                    src={getProfilePictureUrl(partner?.user?.profilePicture, partner?.user?.fullName || 'User')}
+                                                    alt={partner?.user?.fullName || 'User'}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                         ) : (
                                             <div className="w-8 h-8" />

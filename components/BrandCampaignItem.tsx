@@ -104,7 +104,7 @@ export default function BrandCampaignItem({
                             <Eye className="w-4 h-4" />
                         </Link>
                         <Link
-                            href={`/campaigns/edit/${id}`}
+                            href={`/campaigns/${id}/edit`}
                             className="p-3.5 rounded-2xl bg-slate-50 text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all shadow-sm"
                         >
                             <Edit3 className="w-5 h-5" />

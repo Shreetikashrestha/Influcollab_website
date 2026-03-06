@@ -47,10 +47,24 @@ export default function EditCampaignPage() {
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        event.stopPropagation();
+        
+        if (submitting) {
+            console.log('Form already submitting, ignoring duplicate submission');
+            return;
+        }
+        
+        if (!campaignId) {
+            console.error('No campaign ID available');
+            toast.error('Campaign ID is missing');
+            return;
+        }
+        
         console.log('Form submitted, campaignId:', campaignId);
         setSubmitting(true);
 
-        const formData = new FormData(event.currentTarget);
+        try {
+            const formData = new FormData(event.currentTarget);
 
         const rawRequirements = formData.get("requirements")?.toString() || "";
         const requirementsArray = rawRequirements.split("\n").map(r => r.trim()).filter(r => r !== "");
@@ -89,6 +103,11 @@ export default function EditCampaignPage() {
         } finally {
             setSubmitting(false);
         }
+    } catch (error: any) {
+        console.error('Form processing error:', error);
+        toast.error('Failed to process form data');
+        setSubmitting(false);
+    }
     }
 
     if (loading) {

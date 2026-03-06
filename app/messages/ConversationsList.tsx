@@ -5,6 +5,7 @@ import { Search, UserCircle, CheckCheck, Clock, Plus, X, UserPlus, Loader2 } fro
 import { format } from 'date-fns';
 import { searchUsersForMessaging } from '@/lib/api/user';
 import { debounce } from 'lodash';
+import { getProfilePictureUrl } from '@/lib/utils/image';
 
 interface Conversation {
     _id: string;
@@ -105,11 +106,11 @@ export const ConversationsList = ({ conversations, currentUserId, onSelect, onSt
                                 >
                                     <div className={`relative p-0.5 rounded-full border-2 transition-all ${isActive ? 'border-blue-500 scale-110' : unread > 0 ? 'border-pink-500' : 'border-transparent'}`}>
                                         <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm transition-transform group-hover:scale-95">
-                                            {partner?.user?.profilePicture ? (
-                                                <img src={partner.user.profilePicture} alt={partner.user.fullName} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="text-lg font-bold text-blue-600">{partner?.user?.fullName[0] || '?'}</span>
-                                            )}
+                                            <img 
+                                                src={getProfilePictureUrl(partner?.user?.profilePicture, partner?.user?.fullName || 'User')} 
+                                                alt={partner?.user?.fullName || 'User'} 
+                                                className="w-full h-full object-cover" 
+                                            />
                                         </div>
                                         {unread > 0 && (
                                             <div className="absolute top-0 right-0 w-4 h-4 bg-pink-500 rounded-full border-2 border-white shadow-sm" />
@@ -159,11 +160,11 @@ export const ConversationsList = ({ conversations, currentUserId, onSelect, onSt
                                         className="w-full flex items-center p-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0"
                                     >
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center text-indigo-600 font-bold overflow-hidden border-2 border-white shadow-sm">
-                                            {user.profilePicture ? (
-                                                <img src={user.profilePicture} alt={user.fullName} className="w-full h-full object-cover" />
-                                            ) : (
-                                                user.fullName[0]
-                                            )}
+                                            <img 
+                                                src={getProfilePictureUrl(user.profilePicture, user.fullName)} 
+                                                alt={user.fullName} 
+                                                className="w-full h-full object-cover" 
+                                            />
                                         </div>
                                         <div className="ml-3 text-left">
                                             <p className="text-sm font-bold text-gray-800">{user.fullName}</p>
@@ -225,11 +226,11 @@ export const ConversationsList = ({ conversations, currentUserId, onSelect, onSt
                             >
                                 <div className="relative">
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border-2 border-white shadow-md group-hover:scale-105 transition-transform">
-                                        {partner?.user?.profilePicture ? (
-                                            <img src={partner.user.profilePicture} alt={partner.user.fullName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            partner?.user?.fullName[0] || '?'
-                                        )}
+                                        <img 
+                                            src={getProfilePictureUrl(partner?.user?.profilePicture, partner?.user?.fullName || 'User')} 
+                                            alt={partner?.user?.fullName || 'User'} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                     </div>
                                     {unread > 0 && (
                                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-bounce">

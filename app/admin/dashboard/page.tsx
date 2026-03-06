@@ -4,9 +4,6 @@ import React, { useState, useEffect } from 'react';
 import {
     Users,
     Megaphone,
-    Bell,
-    Plus,
-    X,
     TrendingUp
 } from 'lucide-react';
 import {
@@ -22,7 +19,6 @@ import { getAllUsers } from '@/lib/api/admin';
 import { adminFetchAllCampaigns } from '@/lib/api/application';
 
 export default function AdminDashboard() {
-    const [isFormOpen, setIsFormOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalUsers: 0,
@@ -125,18 +121,6 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Platform Overview</h1>
                     <p className="text-gray-500 text-sm font-medium">Real-time performance and user metrics.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsFormOpen(true)}
-                        className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
-                    >
-                        <Plus size={18} /> New Campaign
-                    </button>
-                    <div className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 cursor-pointer hover:bg-gray-50 transition-colors relative">
-                        <Bell size={20} />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-                    </div>
-                </div>
             </header>
 
             {/* Stats Grid */}
@@ -210,60 +194,6 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
-
-            {/* "New Campaign" Modal */}
-            {isFormOpen && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                        <div className="flex justify-between items-center p-8 border-b border-gray-50">
-                            <div>
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Create New Campaign</h2>
-                                <p className="text-sm font-bold text-gray-400 mt-1">Define platform-wide marketing initiatives</p>
-                            </div>
-                            <button
-                                onClick={() => setIsFormOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-gray-900 rounded-full transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <form className="p-8 space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Campaign Title</label>
-                                <input
-                                    type="text"
-                                    placeholder="Summer 2026 Collection Launch"
-                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-gray-900"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Budget Allocation (NPR)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="5000"
-                                        className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-gray-900"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Preferred Platform</label>
-                                    <select className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm font-bold text-blue-600">
-                                        <option>Instagram</option>
-                                        <option>TikTok</option>
-                                        <option>Facebook</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                className="w-full py-5 bg-blue-600 text-white rounded-[24px] font-black text-base shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all mt-4"
-                            >
-                                Finalize & Distribute
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
